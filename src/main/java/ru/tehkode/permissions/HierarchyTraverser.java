@@ -1,3 +1,4 @@
+
 package ru.tehkode.permissions;
 
 import java.util.Deque;
@@ -6,37 +7,32 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Class created to simplify hierarchy traversal for entities
- */
+/** Class created to simplify hierarchy traversal for entities */
 public abstract class HierarchyTraverser<Return> {
 	private final PermissionEntity start;
 	private final String world;
 	private final boolean traverseInheritance;
-
+	
 	public HierarchyTraverser(PermissionEntity entity, String world) {
 		this(entity, world, true);
 	}
+	
 	public HierarchyTraverser(PermissionEntity entity, String world, boolean traverseInheritance) {
 		this.start = entity;
 		this.world = world;
 		this.traverseInheritance = traverseInheritance;
 	}
-
-
-	/**
-	 * Performs a traversal of permissions hierarchy
-	 *
-	 * Ordering:
-	 * For each entity (traversed depth-first):
+	
+	/** Performs a traversal of permissions hierarchy
+	 * 
+	 * Ordering: For each entity (traversed depth-first):
 	 * <ol>
-	 *     <li>Chosen world</li>
-	 *     <li>World inheritance for chosen world</li>
-	 *     <li>Global scope</li>
+	 * <li>Chosen world</li>
+	 * <li>World inheritance for chosen world</li>
+	 * <li>Global scope</li>
 	 * </ol>
-	 *
-	 * @return a value if any found
-	 */
+	 * 
+	 * @return a value if any found */
 	public Return traverse() {
 		LinkedList<PermissionEntity> entities = new LinkedList<>();
 		Set<PermissionEntity> visited = new HashSet<>();
@@ -52,14 +48,14 @@ public abstract class HierarchyTraverser<Return> {
 				continue;
 			}
 			visited.add(current);
-
+			
 			// World-specific
 			if (world != null) {
 				ret = fetchLocal(current, world);
 				if (ret != null) {
 					break;
 				}
-
+				
 				// World inheritance
 				ret = traverseWorldInheritance(current);
 				if (ret != null) {
@@ -71,24 +67,23 @@ public abstract class HierarchyTraverser<Return> {
 			if (ret != null) {
 				break;
 			}
-
+			
 			// Add parents
 			if (traverseInheritance) {
 				List<PermissionGroup> parents = current.getParents(world);
-				for (int i = parents.size() - 1; i >= 0; --i) { // Add parents to be traversed in order provided by getParents
+				for (int i = parents.size() - 1; i >= 0; --i) { // Add parents to be traversed in order
+																												// provided by getParents
 					entities.addFirst(parents.get(i));
 				}
 			}
 		}
 		return ret;
 	}
-
-	/**
-	 * Traverses world inheritance depth-first.
-	 *
+	
+	/** Traverses world inheritance depth-first.
+	 * 
 	 * @param entity Entity to perform local action on
-	 * @return Any detected results
-	 */
+	 * @return Any detected results */
 	private Return traverseWorldInheritance(PermissionEntity entity) {
 		List<String> worldInheritance = entity.manager.getWorldInheritance(world);
 		if (worldInheritance.size() > 0) {
@@ -104,12 +99,12 @@ public abstract class HierarchyTraverser<Return> {
 					continue;
 				}
 				visitedWorlds.add(current);
-
+				
 				ret = fetchLocal(entity, current);
 				if (ret != null) {
 					break;
 				}
-
+				
 				final List<String> nextLevel = entity.manager.getWorldInheritance(current);
 				for (int i = nextLevel.size() - 1; i >= 0; --i) {
 					worlds.add(nextLevel.get(i));
@@ -119,12 +114,11 @@ public abstract class HierarchyTraverser<Return> {
 		}
 		return null;
 	}
-
-	/**
-	 * Collects the potential return value from a single entity
+	
+	/** Collects the potential return value from a single entity
+	 * 
 	 * @param entity Entity being checked in
 	 * @param world World being checked in
-	 * @return The value, or null if not present
-	 */
+	 * @return The value, or null if not present */
 	protected abstract Return fetchLocal(PermissionEntity entity, String world);
 }

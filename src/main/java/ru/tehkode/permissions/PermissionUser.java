@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
@@ -437,7 +436,8 @@ public class PermissionUser extends PermissionEntity {
 	
 	public Player getPlayer() {
 		try {
-			return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
+			//HACK: return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
+			return manager.getPlugin().getServer().getPlayer(getIdentifier());
 		}
 		catch (Throwable ex) { // Not a UUID or method not implemented in server build
 			return manager.getPlugin().getServer().getPlayerExact(getIdentifier());

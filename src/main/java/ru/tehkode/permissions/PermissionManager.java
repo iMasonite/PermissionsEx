@@ -176,7 +176,8 @@ public class PermissionManager {
 	 * @param permission permission string to check against
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission) {
-		return this.has(player.getUniqueId(), permission, player.getWorld().getName());
+		//HACK , player.getName()
+		return this.has(player.getUniqueId(), permission, player.getWorld().getName(), player.getName());
 	}
 	
 	/** Check if player has specified permission in world
@@ -186,7 +187,9 @@ public class PermissionManager {
 	 * @param world world's name as string
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission, String world) {
-		return this.has(player.getUniqueId(), permission, world);
+		//HACK , player.getName()
+		
+		return this.has(player.getUniqueId(), permission, world, player.getName());
 	}
 	
 	/** Check if player with name has permission in world
@@ -203,14 +206,16 @@ public class PermissionManager {
 		return user.has(permission, world);
 	}
 	
+	//HACK , String playerName
 	/** Check if player with UUID has permission in world
 	 * 
 	 * @param playerId player name
 	 * @param permission permission as string to check against
 	 * @param world world's name as string
 	 * @return true on success false otherwise */
-	public boolean has(UUID playerId, String permission, String world) {
-		PermissionUser user = this.getUser(playerId);
+	public boolean has(UUID playerId, String permission, String world, String playerName) {
+		//HACK , playerName
+		PermissionUser user = this.getUser(playerId, playerName);
 		
 		return user != null && user.has(permission, world);
 		
@@ -225,13 +230,15 @@ public class PermissionManager {
 		
 		try {
 			if (username.length() != 36) throw new IllegalArgumentException("not a uuid, try stuff");
-			return getUser(UUID.fromString(username)); // Username is uuid as string, just use it
+		//HACK UUID.fromString(username) > , username
+			return getUser(UUID.fromString(username), username); // Username is uuid as string, just use it
 		}
 		catch (IllegalArgumentException ex) {
 			OfflinePlayer player = plugin.getServer().getOfflinePlayer(username);
 			UUID userUUID = null;
 			try {
-				userUUID = player instanceof Player ? ((Player) player).getUniqueId() : player.getUniqueId();
+				//HACK userUUID = player instanceof Player ? ((Player) player).getUniqueId() : player.getUniqueId();
+				userUUID = player instanceof Player ? ((Player) player).getUniqueId() : UUID.fromString(username);
 			}
 			catch (Throwable t) {
 				// Handle cases where the plugin is not running on a uuid-aware Bukkit by just not
@@ -252,23 +259,26 @@ public class PermissionManager {
 		return this.getUser(player.getUniqueId().toString(), player.getName(), true);
 	}
 	
-	public PermissionUser getUser(UUID uid) {
+	//HACK , String playerName
+	public PermissionUser getUser(UUID uid, String playerName) {
 		final String identifier = uid.toString();
 		if (users.containsKey(identifier.toLowerCase())) return getUser(identifier, null, false);
-		OfflinePlayer ply = null;
+		OfflinePlayer oPlayer = null;
+		
 		try {
-			ply = plugin.getServer().getPlayer(uid); // to make things cheaper, we're just checking online
-																								// players (can be improved later on)
+			//HACK: uid > playerName
+			oPlayer = plugin.getServer().getPlayer(playerName); 
+			// to make things cheaper, we're just checking online players (can be improved later on)
 			// Also, only online players are really necessary to convert to proper names
 		}
 		catch (NoSuchMethodError e) {
 			// Old craftbukkit, guess we won't have a fallback name. Much shame.
 		}
 		String fallbackName = null;
-		if (ply != null) {
-			fallbackName = ply.getName();
+		if (oPlayer != null) {
+			fallbackName = oPlayer.getName();
 		}
-		return getUser(identifier, fallbackName, ply != null);
+		return getUser(identifier, fallbackName, oPlayer != null);
 	}
 	
 	private PermissionUser getUser(String identifier, String fallbackName, boolean store) {
@@ -414,8 +424,9 @@ public class PermissionManager {
 		}
 	}
 	
-	public void clearUserCache(UUID uid) {
-		PermissionUser user = this.getUser(uid);
+	//HACK , String playerName
+	public void clearUserCache(UUID uid, String playerName) {
+		PermissionUser user = this.getUser(uid, playerName);
 		
 		if (user != null) {
 			user.clearCache();
@@ -426,7 +437,8 @@ public class PermissionManager {
 	 * 
 	 * @param player */
 	public void clearUserCache(Player player) {
-		this.clearUserCache(player.getUniqueId());
+		//HACK player.getUniqueId() > player.getName()
+		this.clearUserCache(player.getName());
 	}
 	
 	/** Return object for specified group

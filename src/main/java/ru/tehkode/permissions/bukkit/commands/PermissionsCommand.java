@@ -32,6 +32,7 @@ import ru.tehkode.permissions.commands.CommandsManager;
 import ru.tehkode.permissions.commands.exceptions.AutoCompleteChoicesException;
 import ru.tehkode.utils.StringUtils;
 
+@SuppressWarnings("unused")
 public abstract class PermissionsCommand implements CommandListener {
 	protected CommandsManager manager;
 	

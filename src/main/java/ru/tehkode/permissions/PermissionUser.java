@@ -25,10 +25,10 @@ import ru.tehkode.permissions.events.PermissionEntityEvent;
 import ru.tehkode.permissions.exceptions.RankingException;
 
 /** @author code */
+@SuppressWarnings("javadoc")
 public class PermissionUser extends PermissionEntity {
 	
-	private final static String PERMISSION_NOT_FOUND = "<not found>"; // used replace null for
-																																		// ConcurrentHashMap
+	private final static String PERMISSION_NOT_FOUND = "<not found>";
 	
 	private final PermissionsUserData data;
 	protected Map<String, List<PermissionGroup>> cachedGroups = new HashMap<>();
@@ -436,7 +436,7 @@ public class PermissionUser extends PermissionEntity {
 	
 	public Player getPlayer() {
 		try {
-			//HACK: return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
+			// HACK: return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
 			return manager.getPlugin().getServer().getPlayer(getIdentifier());
 		}
 		catch (Throwable ex) { // Not a UUID or method not implemented in server build

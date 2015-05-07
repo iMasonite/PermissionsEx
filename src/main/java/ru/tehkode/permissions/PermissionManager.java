@@ -147,6 +147,7 @@ public class PermissionManager {
 			}
 		}
 		
+		@SuppressWarnings("incomplete-switch")
 		@EventHandler(priority = EventPriority.LOWEST)
 		public void onSystemEvent(PermissionSystemEvent event) {
 			if (isLocal(event)) return;

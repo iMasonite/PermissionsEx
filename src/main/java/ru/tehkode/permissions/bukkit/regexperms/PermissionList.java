@@ -17,7 +17,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /** @author zml2008 */
+@SuppressWarnings({ "serial", "rawtypes" })
 public class PermissionList extends HashMap<String, Permission> {
+	
 	private static FieldReplacer<PluginManager, Map> INJECTOR;
 	
 	private static final Map<Class<?>, FieldReplacer<Permission, Map>> CHILDREN_MAPS = new HashMap<>();

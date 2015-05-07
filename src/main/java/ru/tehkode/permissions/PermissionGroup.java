@@ -20,6 +20,7 @@ import java.util.Set;
 import ru.tehkode.permissions.events.PermissionEntityEvent;
 
 /** @author t3hk0d3 */
+@SuppressWarnings("javadoc")
 public class PermissionGroup extends PermissionEntity implements Comparable<PermissionGroup> {
 	protected int weight = 0;
 	protected boolean dirtyWeight = true;

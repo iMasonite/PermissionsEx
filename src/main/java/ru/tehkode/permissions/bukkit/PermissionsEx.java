@@ -49,7 +49,9 @@ import ru.tehkode.permissions.exceptions.PermissionsNotAvailable;
 import ru.tehkode.utils.StringUtils;
 
 /** @author code */
+@SuppressWarnings("unused")
 public class PermissionsEx extends JavaPlugin {
+	
 	private static final int BUKKITDEV_ID = 31279;
 	protected PermissionManager permissionsManager;
 	protected CommandsManager commandsManager;

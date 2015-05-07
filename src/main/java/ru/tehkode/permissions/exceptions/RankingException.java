@@ -13,6 +13,7 @@ package ru.tehkode.permissions.exceptions;
 
 import ru.tehkode.permissions.PermissionUser;
 
+@SuppressWarnings("serial")
 public class RankingException extends Exception {
 	
 	protected PermissionUser target = null;

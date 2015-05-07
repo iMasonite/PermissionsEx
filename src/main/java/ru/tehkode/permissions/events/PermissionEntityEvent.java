@@ -19,7 +19,6 @@ import ru.tehkode.permissions.PermissionEntity;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /** @author t3hk0d3 */
-@SuppressWarnings("serial")
 public class PermissionEntityEvent extends PermissionEvent {
 	
 	private static final HandlerList handlers = new HandlerList();

@@ -23,7 +23,6 @@ import ru.tehkode.permissions.exceptions.PermissionBackendException;
  * 
  * Default group: Groups have a default flag. All users are in groups with default marked true. No
  * default group is required to exist. */
-@SuppressWarnings({ "unused", "javadoc" })
 public abstract class PermissionBackend {
 	private final PermissionManager manager;
 	private final ConfigurationSection backendConfig;
@@ -164,7 +163,13 @@ public abstract class PermissionBackend {
 	 * @param alias
 	 * @param backendClass */
 	public static void registerBackendAlias(String alias, Class<? extends PermissionBackend> backendClass) {
-		if (!PermissionBackend.class.isAssignableFrom(backendClass)) throw new IllegalArgumentException("Provided class should be subclass of PermissionBackend");
+		if (!PermissionBackend.class.isAssignableFrom(backendClass)) throw new IllegalArgumentException("Provided class should be subclass of PermissionBackend"); // This
+																																																																																// should
+																																																																																// be
+																																																																																// enforced
+																																																																																// at
+																																																																																// compile
+																																																																																// time
 		
 		REGISTERED_ALIASES.put(alias, backendClass);
 		

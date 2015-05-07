@@ -42,7 +42,6 @@ import ru.tehkode.utils.FieldReplacer;
  * values.
  * <p/>
  * Class should be thread-safe */
-@SuppressWarnings({ "unchecked", "serial", "rawtypes" })
 public class PermissiblePEX extends PermissibleBase {
 	private static final FieldReplacer<PermissibleBase, Map> PERMISSIONS_FIELD = new FieldReplacer<>(PermissibleBase.class, "permissions", Map.class);
 	private static final FieldReplacer<PermissibleBase, List> ATTACHMENTS_FIELD = new FieldReplacer<>(PermissibleBase.class, "attachments", List.class);
@@ -68,6 +67,7 @@ public class PermissiblePEX extends PermissibleBase {
 	protected final Map<String, PermissionCheckResult> cache = new ConcurrentHashMap<>();
 	private final Object permissionsLock = new Object();
 	
+	@SuppressWarnings("unchecked")
 	public PermissiblePEX(Player player, PermissionsEx plugin) {
 		super(player);
 		this.player = player;

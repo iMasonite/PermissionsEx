@@ -4,6 +4,7 @@ package ru.tehkode.permissions.bukkit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +26,7 @@ import ru.tehkode.permissions.events.PermissionSystemEvent;
 /** PEX permissions database integration with superperms */
 public class SuperpermsListener implements Listener {
 	private final PermissionsEx plugin;
-	private final Map<String, PermissionAttachment> attachments = new HashMap<String, PermissionAttachment>();
+	private final Map<UUID, PermissionAttachment> attachments = new HashMap<>();
 	
 	public SuperpermsListener(PermissionsEx plugin) {
 		this.plugin = plugin;
@@ -39,14 +40,12 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	protected void updateAttachment(Player player, String worldName) {
-		//HACK getUniqueId() > getName()
-		PermissionAttachment attach = attachments.get(player.getName());
+		PermissionAttachment attach = attachments.get(player.getUniqueId());
 		Permission playerPerm = getCreateWrapper(player, "");
 		Permission playerOptionPerm = getCreateWrapper(player, ".options");
 		if (attach == null) {
 			attach = player.addAttachment(plugin);
-			//HACK getUniqueId() > getName()
-			attachments.put(player.getName(), attach);
+			attachments.put(player.getUniqueId(), attach);
 			attach.setPermission(playerPerm, true);
 		}
 		
@@ -59,8 +58,7 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	private String permissionName(Player player, String suffix) {
-		//HACK getUniqueId() > getName()
-		return "permissionsex.player." + player.getName().toString() + suffix;
+		return "permissionsex.player." + player.getUniqueId().toString() + suffix;
 	}
 	
 	private void removePEXPerm(Player player, String suffix) {
@@ -117,8 +115,7 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	protected void removeAttachment(Player player) {
-		//HACK getUniqueId() > getName()
-		PermissionAttachment attach = attachments.remove(player.getName());
+		PermissionAttachment attach = attachments.remove(player.getUniqueId());
 		if (attach != null) {
 			attach.remove();
 		}

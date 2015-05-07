@@ -49,9 +49,7 @@ import ru.tehkode.permissions.exceptions.PermissionsNotAvailable;
 import ru.tehkode.utils.StringUtils;
 
 /** @author code */
-@SuppressWarnings("unused")
 public class PermissionsEx extends JavaPlugin {
-	
 	private static final int BUKKITDEV_ID = 31279;
 	protected PermissionManager permissionsManager;
 	protected CommandsManager commandsManager;
@@ -122,6 +120,14 @@ public class PermissionsEx extends JavaPlugin {
 		try {
 			this.config = new PermissionsExConfig(this.getConfig());
 			this.commandsManager = new CommandsManager(this);
+			
+			if (!getServer().getOnlineMode()) {
+				getLogger().log(Level.WARNING, "This server is in offline mode. Unless this server is configured to integrate with a supported proxy (see http://dft.ba/-8ous), UUIDs *may not be stable*!");
+			}
+			// this.permissionsManager = new PermissionManager(this.config);
+			/*
+			 * } catch (PermissionBackendException e) { logBackendExc(e); errored = true;
+			 */
 		}
 		catch (Throwable t) {
 			ErrorReport.handleError("In onLoad", t);

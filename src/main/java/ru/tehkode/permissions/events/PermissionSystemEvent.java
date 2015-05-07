@@ -16,7 +16,6 @@ import java.util.UUID;
 import org.bukkit.event.HandlerList;
 
 /** @author t3hk0d3 */
-@SuppressWarnings("serial")
 public class PermissionSystemEvent extends PermissionEvent {
 	protected Action action;
 	private static final HandlerList handlers = new HandlerList();

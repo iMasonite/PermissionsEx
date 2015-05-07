@@ -16,7 +16,6 @@ import com.google.common.collect.Sets;
 public class MemoryData implements PermissionsGroupData, PermissionsUserData {
 	private String name;
 	private final HashMap<String, String> worldPrefix = new HashMap<>();
-	@SuppressWarnings("unused")
 	private final HashMap<String, String> worldSuffix = new HashMap<>();
 	private final HashMap<String, List<String>> worldsPermissions = new HashMap<>();
 	private final Map<String, Map<String, String>> worldsOptions = new HashMap<>();

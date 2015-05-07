@@ -11,7 +11,6 @@
 
 package ru.tehkode.permissions.commands.exceptions;
 
-@SuppressWarnings("serial")
 public class AutoCompleteChoicesException extends RuntimeException {
 	
 	protected String[] choices;

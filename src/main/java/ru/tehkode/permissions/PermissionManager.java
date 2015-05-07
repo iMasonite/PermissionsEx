@@ -147,7 +147,6 @@ public class PermissionManager {
 			}
 		}
 		
-		@SuppressWarnings("incomplete-switch")
 		@EventHandler(priority = EventPriority.LOWEST)
 		public void onSystemEvent(PermissionSystemEvent event) {
 			if (isLocal(event)) return;
@@ -177,8 +176,7 @@ public class PermissionManager {
 	 * @param permission permission string to check against
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission) {
-		//HACK , player.getName()
-		return this.has(player.getUniqueId(), permission, player.getWorld().getName(), player.getName());
+		return this.has(player.getUniqueId(), permission, player.getWorld().getName());
 	}
 	
 	/** Check if player has specified permission in world
@@ -188,9 +186,7 @@ public class PermissionManager {
 	 * @param world world's name as string
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission, String world) {
-		//HACK , player.getName()
-		
-		return this.has(player.getUniqueId(), permission, world, player.getName());
+		return this.has(player.getUniqueId(), permission, world);
 	}
 	
 	/** Check if player with name has permission in world
@@ -207,16 +203,14 @@ public class PermissionManager {
 		return user.has(permission, world);
 	}
 	
-	//HACK , String playerName
 	/** Check if player with UUID has permission in world
 	 * 
 	 * @param playerId player name
 	 * @param permission permission as string to check against
 	 * @param world world's name as string
 	 * @return true on success false otherwise */
-	public boolean has(UUID playerId, String permission, String world, String playerName) {
-		//HACK , playerName
-		PermissionUser user = this.getUser(playerId, playerName);
+	public boolean has(UUID playerId, String permission, String world) {
+		PermissionUser user = this.getUser(playerId);
 		
 		return user != null && user.has(permission, world);
 		
@@ -231,15 +225,13 @@ public class PermissionManager {
 		
 		try {
 			if (username.length() != 36) throw new IllegalArgumentException("not a uuid, try stuff");
-		//HACK UUID.fromString(username) > , username
-			return getUser(UUID.fromString(username), username); // Username is uuid as string, just use it
+			return getUser(UUID.fromString(username)); // Username is uuid as string, just use it
 		}
 		catch (IllegalArgumentException ex) {
 			OfflinePlayer player = plugin.getServer().getOfflinePlayer(username);
 			UUID userUUID = null;
 			try {
-				//HACK userUUID = player instanceof Player ? ((Player) player).getUniqueId() : player.getUniqueId();
-				userUUID = player instanceof Player ? ((Player) player).getUniqueId() : UUID.fromString(username);
+				userUUID = player instanceof Player ? ((Player) player).getUniqueId() : player.getUniqueId();
 			}
 			catch (Throwable t) {
 				// Handle cases where the plugin is not running on a uuid-aware Bukkit by just not
@@ -260,26 +252,23 @@ public class PermissionManager {
 		return this.getUser(player.getUniqueId().toString(), player.getName(), true);
 	}
 	
-	//HACK , String playerName
-	public PermissionUser getUser(UUID uid, String playerName) {
+	public PermissionUser getUser(UUID uid) {
 		final String identifier = uid.toString();
 		if (users.containsKey(identifier.toLowerCase())) return getUser(identifier, null, false);
-		OfflinePlayer oPlayer = null;
-		
+		OfflinePlayer ply = null;
 		try {
-			//HACK: uid > playerName
-			oPlayer = plugin.getServer().getPlayer(playerName); 
-			// to make things cheaper, we're just checking online players (can be improved later on)
+			ply = plugin.getServer().getPlayer(uid); // to make things cheaper, we're just checking online
+																								// players (can be improved later on)
 			// Also, only online players are really necessary to convert to proper names
 		}
 		catch (NoSuchMethodError e) {
 			// Old craftbukkit, guess we won't have a fallback name. Much shame.
 		}
 		String fallbackName = null;
-		if (oPlayer != null) {
-			fallbackName = oPlayer.getName();
+		if (ply != null) {
+			fallbackName = ply.getName();
 		}
-		return getUser(identifier, fallbackName, oPlayer != null);
+		return getUser(identifier, fallbackName, ply != null);
 	}
 	
 	private PermissionUser getUser(String identifier, String fallbackName, boolean store) {
@@ -425,9 +414,8 @@ public class PermissionManager {
 		}
 	}
 	
-	//HACK , String playerName
-	public void clearUserCache(UUID uid, String playerName) {
-		PermissionUser user = this.getUser(uid, playerName);
+	public void clearUserCache(UUID uid) {
+		PermissionUser user = this.getUser(uid);
 		
 		if (user != null) {
 			user.clearCache();
@@ -438,8 +426,7 @@ public class PermissionManager {
 	 * 
 	 * @param player */
 	public void clearUserCache(Player player) {
-		//HACK player.getUniqueId() > player.getName()
-		this.clearUserCache(player.getName());
+		this.clearUserCache(player.getUniqueId());
 	}
 	
 	/** Return object for specified group

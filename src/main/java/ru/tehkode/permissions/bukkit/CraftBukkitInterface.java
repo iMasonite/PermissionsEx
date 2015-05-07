@@ -4,7 +4,6 @@ package ru.tehkode.permissions.bukkit;
 import org.bukkit.Bukkit;
 
 /** Interface to get versioned obfuscation of CraftBukkit classes */
-@SuppressWarnings("rawtypes")
 public class CraftBukkitInterface {
 	private static final String CRAFTBUKKIT_PREFIX = "org.bukkit.craftbukkit";
 	private static final String VERSION;

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -66,14 +67,12 @@ public class UserCommands extends PermissionsCommand {
 		PermissionUser user = plugin.getPermissionsManager().getUser(userName);
 		
 		if (user == null) {
-			//HACK userName > args.get("user")
-			sender.sendMessage(ChatColor.RED + "User \"" + args.get("user") + "\" doesn't exist.");
+			sender.sendMessage(ChatColor.RED + "User \"" + userName + "\" doesn't exist.");
 			return;
 		}
 		userName = user.getName();
 		
-		//HACK: describeUser(user) > args.get("user")
-		sender.sendMessage("'" + args.get("user") + "' is a member of:");
+		sender.sendMessage("'" + describeUser(user) + "' is a member of:");
 		printEntityInheritance(sender, user.getParents());
 		
 		Map<String, List<PermissionGroup>> allParents = user.getAllParents();
@@ -86,13 +85,11 @@ public class UserCommands extends PermissionsCommand {
 			printEntityInheritance(sender, allParents.get(world));
 		}
 		
-		//HACK: userName > args.get("user")
-		sender.sendMessage(args.get("user") + "'s permissions:");
+		sender.sendMessage(userName + "'s permissions:");
 		
 		this.sendMessage(sender, this.mapPermissions(worldName, user, 0));
 		
-		//HACK userName > args.get("user")
-		sender.sendMessage(args.get("user") + "'s options:");
+		sender.sendMessage(userName + "'s options:");
 		for (Map.Entry<String, String> option : user.getOptions(worldName).entrySet()) {
 			sender.sendMessage("  " + option.getKey() + " = \"" + option.getValue() + "\"");
 		}
@@ -128,9 +125,8 @@ public class UserCommands extends PermissionsCommand {
 		
 		Player player;
 		try {
-			//UUID uid = UUID.fromString(userName);
-			//HACK: player = plugin.getServer().getPlayer(uid);
-			player = plugin.getServer().getPlayer(userName);
+			UUID uid = UUID.fromString(userName);
+			player = plugin.getServer().getPlayer(uid);
 		}
 		catch (IllegalArgumentException ex) {
 			player = plugin.getServer().getPlayerExact(userName);

@@ -17,7 +17,6 @@ import java.util.UUID;
 import org.bukkit.event.Event;
 
 /** @author t3hk0d3 */
-@SuppressWarnings("serial")
 public abstract class PermissionEvent extends Event implements Serializable {
 	private final UUID serverId;
 	

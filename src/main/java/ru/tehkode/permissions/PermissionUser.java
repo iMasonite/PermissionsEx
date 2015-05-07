@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
@@ -25,10 +26,10 @@ import ru.tehkode.permissions.events.PermissionEntityEvent;
 import ru.tehkode.permissions.exceptions.RankingException;
 
 /** @author code */
-@SuppressWarnings("javadoc")
 public class PermissionUser extends PermissionEntity {
 	
-	private final static String PERMISSION_NOT_FOUND = "<not found>";
+	private final static String PERMISSION_NOT_FOUND = "<not found>"; // used replace null for
+																																		// ConcurrentHashMap
 	
 	private final PermissionsUserData data;
 	protected Map<String, List<PermissionGroup>> cachedGroups = new HashMap<>();
@@ -436,8 +437,7 @@ public class PermissionUser extends PermissionEntity {
 	
 	public Player getPlayer() {
 		try {
-			// HACK: return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
-			return manager.getPlugin().getServer().getPlayer(getIdentifier());
+			return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
 		}
 		catch (Throwable ex) { // Not a UUID or method not implemented in server build
 			return manager.getPlugin().getServer().getPlayerExact(getIdentifier());

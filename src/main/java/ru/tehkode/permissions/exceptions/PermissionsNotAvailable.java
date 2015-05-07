@@ -1,7 +1,6 @@
 
 package ru.tehkode.permissions.exceptions;
 
-@SuppressWarnings("serial")
 public class PermissionsNotAvailable extends RuntimeException {
 	
 	public PermissionsNotAvailable() {

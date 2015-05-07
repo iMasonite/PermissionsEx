@@ -39,6 +39,10 @@ public class BackendDataTransfer {
 
 	public static void transferGroup(PermissionsGroupData from, PermissionsGroupData to) {
 		transferBase(from, to);
+		to.setDefault(from.isDefault(null), null);
+		for (String world : from.getWorlds()) {
+			to.setDefault(from.isDefault(world), world);
+		}
 	}
 
 	public static void transferUser(PermissionsUserData from, PermissionsUserData to) {

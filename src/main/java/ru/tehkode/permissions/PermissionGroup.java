@@ -55,7 +55,7 @@ public class PermissionGroup extends PermissionEntity implements Comparable<Perm
 
 	public int getWeight() {
 		if (this.dirtyWeight) {
-			this.weight = this.getOwnOptionInteger("weight", null, 0);
+			this.weight = this.getOptionInteger("weight", null, 0);
 			this.dirtyWeight = false;
 		}
 
@@ -108,7 +108,7 @@ public class PermissionGroup extends PermissionEntity implements Comparable<Perm
 	 * @return Name of rank ladder as String
 	 */
 	public String getRankLadder() {
-		return this.getOwnOption("rank-ladder", null, "default");
+		return this.getOption("rank-ladder", "", "default");
 	}
 
 	/**
@@ -124,6 +124,11 @@ public class PermissionGroup extends PermissionEntity implements Comparable<Perm
 		this.setOption("rank-ladder", rankLadder);
 
 		this.callEvent(PermissionEntityEvent.Action.RANK_CHANGED);
+	}
+
+	@Override
+	protected List<String> getPermissionsInternal(String worldName, boolean filterNonInheritable) {
+		return super.getPermissionsInternal(worldName, true);
 	}
 
 	/**
@@ -258,16 +263,15 @@ public class PermissionGroup extends PermissionEntity implements Comparable<Perm
 	}
 
 	public boolean isDefault(String worldName) {
-		return getOwnOptionBoolean("default", worldName, false);
+		return getData().isDefault(worldName);
 	}
 
 	public void setDefault(boolean def, String worldName) {
-		setOption("default", String.valueOf(def), worldName);
+		getData().setDefault(def, worldName);
 		callEvent(PermissionEntityEvent.Action.DEFAULTGROUP_CHANGED);
 	}
 
 	protected void clearCache() {
-		this.dirtyWeight = true;
 		for (PermissionUser user : this.getActiveUsers()) {
 			user.clearCache();
 		}

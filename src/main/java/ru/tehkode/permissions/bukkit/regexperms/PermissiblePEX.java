@@ -18,7 +18,6 @@
  */
 package ru.tehkode.permissions.bukkit.regexperms;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.PermissibleBase;
@@ -47,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Implements regex-based permission matching for superperms.
  * If a permission match is found using existing superperms methods, it takes priority.
  * However, if a match is not found we use a {@link PermissionMatcher} set in the plugin object to check for a permissions match, caching values.
- *
+ * <p/>
  * Class should be thread-safe
  */
 public class PermissiblePEX extends PermissibleBase {
@@ -139,8 +138,7 @@ public class PermissiblePEX extends PermissibleBase {
 					}
 					return ret;
 				} else {
-					Permission perm = player.getServer().getPluginManager().getPermission(permission);
-					return perm == null ? Permission.DEFAULT_PERMISSION.getValue(player.isOp()) : perm.getDefault().getValue(player.isOp());
+					return false;
 				}
 		}
 	}
@@ -224,7 +222,6 @@ public class PermissiblePEX extends PermissibleBase {
 
 	protected PermissionCheckResult permissionValue(String permission) {
 		try {
-			Validate.notNull(permission, "Permissions being checked must not be null!");
 			permission = permission.toLowerCase();
 			PermissionCheckResult res = cache.get(permission);
 			if (res != null) {

@@ -18,23 +18,13 @@
  */
 package ru.tehkode.permissions.bukkit;
 
-import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
-import com.zachsthings.netevents.NetEventsPlugin;
 import net.gravitydevelopment.updater.Updater;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
@@ -42,33 +32,40 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.tehkode.permissions.NativeInterface;
+
+import ru.tehkode.permissions.backends.PermissionBackend;
 import ru.tehkode.permissions.PermissionManager;
 import ru.tehkode.permissions.PermissionUser;
-import ru.tehkode.permissions.backends.MultiBackend;
-import ru.tehkode.permissions.backends.PermissionBackend;
-import ru.tehkode.permissions.backends.file.FileBackend;
 import ru.tehkode.permissions.backends.memory.MemoryBackend;
+import ru.tehkode.permissions.backends.file.FileBackend;
 import ru.tehkode.permissions.backends.sql.SQLBackend;
-import ru.tehkode.permissions.bukkit.commands.*;
+import ru.tehkode.permissions.bukkit.commands.GroupCommands;
+import ru.tehkode.permissions.bukkit.commands.PromotionCommands;
+import ru.tehkode.permissions.bukkit.commands.UserCommands;
+import ru.tehkode.permissions.bukkit.commands.UtilityCommands;
+import ru.tehkode.permissions.bukkit.commands.WorldCommands;
 import ru.tehkode.permissions.bukkit.regexperms.RegexPermissions;
 import ru.tehkode.permissions.commands.CommandsManager;
-import ru.tehkode.permissions.events.PermissionEvent;
 import ru.tehkode.permissions.exceptions.PermissionBackendException;
 import ru.tehkode.permissions.exceptions.PermissionsNotAvailable;
 import ru.tehkode.utils.StringUtils;
 
+import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 /**
  * @author code
  */
-public class PermissionsEx extends JavaPlugin implements NativeInterface {
+public class PermissionsEx extends JavaPlugin {
 	private static final int BUKKITDEV_ID = 31279;
 	protected PermissionManager permissionsManager;
 	protected CommandsManager commandsManager;
 	private PermissionsExConfig config;
 	protected SuperpermsListener superms;
 	private RegexPermissions regexPerms;
-	private NetEventsPlugin netEvents;
 	private boolean errored = false;
 	private static PermissionsEx instance;
 	{
@@ -88,7 +85,6 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 		PermissionBackend.registerBackendAlias("sql", SQLBackend.class);
 		PermissionBackend.registerBackendAlias("file", FileBackend.class);
 		PermissionBackend.registerBackendAlias("memory", MemoryBackend.class);
-		PermissionBackend.registerBackendAlias("multi", MultiBackend.class);
 
 	}
 
@@ -115,7 +111,7 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 
 		public boolean isDay() {
 			final Calendar cal = Calendar.getInstance();
-			return cal.get(Calendar.MONTH) == Calendar.APRIL && cal.get(Calendar.DAY_OF_MONTH) == 1;
+			return cal.get(GregorianCalendar.MONTH) == Calendar.APRIL && cal.get(GregorianCalendar.DAY_OF_MONTH) == 1;
 		}
 
 		@Override
@@ -135,7 +131,7 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 	@Override
 	public void onLoad() {
 		try {
-			this.config = new PermissionsExConfig(this.getConfig(), this);
+			this.config = new PermissionsExConfig(this.getConfig());
 			this.commandsManager = new CommandsManager(this);
 
 			if (!getServer().getOnlineMode()) {
@@ -160,20 +156,7 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 		}
 		try {
 			if (this.permissionsManager == null) {
-				this.permissionsManager = new PermissionManager(config, getLogger(), this);
-			}
-
-			try {
-				OfflinePlayer.class.getMethod("getUniqueId");
-			} catch (NoSuchMethodException e) {
-				getLogger().severe("============================================================================================");
-				getLogger().severe("As of version 1.21, PEX requires a version of Bukkit with UUID support to function (>1.7.5). Please download a non-UUID version of PermissionsEx to continue.");
-				getLogger().severe("Beginning reversion of potential invalid UUID conversion");
-				getPermissionsManager().getBackend().revertUUID();
-				getLogger().severe("Reversion complete, disabling. PermissionsEx will not work until downgrade is complete");
-				getLogger().severe("============================================================================================");
-				getPluginLoader().disablePlugin(this);
-				return;
+				this.permissionsManager = new PermissionManager(this);
 			}
 
 			// Register commands
@@ -187,7 +170,7 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 			PlayerEventsListener cleaner = new PlayerEventsListener();
 			this.getServer().getPluginManager().registerEvents(cleaner, this);
 
-			// Register service
+			//register service
 			this.getServer().getServicesManager().register(PermissionManager.class, this.permissionsManager, this, ServicePriority.Normal);
 			regexPerms = new RegexPermissions(this);
 			superms = new SuperpermsListener(this);
@@ -254,14 +237,6 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 					}
 				});
 			}
-			if (getConfiguration().useNetEvents()) {
-				Plugin netEventsPlugin = getServer().getPluginManager().getPlugin("NetEvents");
-				if (netEventsPlugin != null && netEventsPlugin.isEnabled()) {
-					NetEventsPlugin netEvents = (NetEventsPlugin) netEventsPlugin;
-					getServer().getPluginManager().registerEvents(new RemoteEventListener(netEvents, permissionsManager), this);
-					this.netEvents = netEvents;
-				}
-			}
 		} catch (PermissionBackendException e) {
 			logBackendExc(e);
 			this.getPluginLoader().disablePlugin(this);
@@ -276,17 +251,14 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 		try {
 			if (this.permissionsManager != null) {
 				this.permissionsManager.end();
-				this.getServer().getServicesManager().unregister(PermissionManager.class, this.permissionsManager);
-				this.permissionsManager = null;
 			}
 
+			this.getServer().getServicesManager().unregister(PermissionManager.class, this.permissionsManager);
 			if (this.regexPerms != null) {
 				this.regexPerms.onDisable();
-				this.regexPerms = null;
 			}
 			if (this.superms != null) {
 				this.superms.onDisable();
-				this.superms = null;
 			}
 
 		} catch (Throwable t) {
@@ -305,7 +277,7 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 				if (sender instanceof Player) {
 					sender.sendMessage("[" + ChatColor.RED + "PermissionsEx" + ChatColor.WHITE + "] version [" + ChatColor.BLUE + pdf.getVersion() + ChatColor.WHITE + "]");
 
-					return this.permissionsManager == null || !this.permissionsManager.has((Player) sender, "permissions.manage");
+					return !this.permissionsManager.has((Player) sender, "permissions.manage");
 				} else {
 					sender.sendMessage("[PermissionsEx] version [" + pdf.getVersion() + "]");
 
@@ -318,16 +290,12 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 		}
 	}
 
-	public boolean requiresLateUserSetup() {
-		return getServer().getPluginManager().isPluginEnabled("LilyPad-Connect");
-	}
-
 	public PermissionsExConfig getConfiguration() {
 		return config;
 	}
 
 	public boolean isDebug() {
-		return permissionsManager != null && permissionsManager.isDebug();
+		return permissionsManager.isDebug();
 	}
 
 	public static Plugin getPlugin() {
@@ -336,50 +304,6 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 
 	public RegexPermissions getRegexPerms() {
 		return regexPerms;
-	}
-
-	@Override
-	public String UUIDToName(UUID uid) {
-		OfflinePlayer ply = null;
-		try {
-			ply = getServer().getPlayer(uid); // to make things cheaper, we're just checking online players (can be improved later on)
-			// Also, only online players are really necessary to convert to proper names
-		} catch (NoSuchMethodError e) {
-			// Old craftbukkit, guess we won't have a fallback name. Much shame.
-		}
-		return ply != null ? ply.getName() : null;
-	}
-
-	@Override
-	public UUID nameToUUID(String name) {
-		OfflinePlayer player = getServer().getOfflinePlayer(name);
-		UUID userUUID = null;
-		try {
-			userUUID = player.getUniqueId();
-		} catch (Throwable t) {
-			// Handle cases where the plugin is not running on a uuid-aware Bukkit by just not converting here
-		}
-		return userUUID;
-	}
-
-	@Override
-	public boolean isOnline(UUID uuid) {
-		Player player = getServer().getPlayer(uuid);
-		return (player != null && player.isOnline());
-	}
-
-	@Override
-	public UUID getServerUUID() {
-		return netEvents == null ? null : netEvents.getServerUUID();
-	}
-
-	@Override
-	public void callEvent(PermissionEvent event) {
-		if (netEvents != null) {
-			netEvents.callEvent(event);
-		} else {
-			getServer().getPluginManager().callEvent(event);
-		}
 	}
 
 	public static boolean isAvailable() {
@@ -417,27 +341,19 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 	}
 
 	public class PlayerEventsListener implements Listener {
-		@EventHandler(priority = EventPriority.MONITOR)
-		public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-			if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED && !requiresLateUserSetup()) {
-				getPermissionsManager().cacheUser(event.getUniqueId().toString(), event.getName());
-			}
-		}
-
 		@EventHandler
 		public void onPlayerLogin(PlayerJoinEvent event) {
 			try {
 				PermissionUser user = getPermissionsManager().getUser(event.getPlayer());
-				if (!user.isVirtual()) {
-					if (!event.getPlayer().getName().equals(user.getOption("name"))) { // Update name only if user exists in config
-						user.setOption("name", event.getPlayer().getName());
-					}
-					if (!config.shouldLogPlayers()) {
-						return;
-					}
-					user.setOption("last-login-time", Long.toString(System.currentTimeMillis() / 1000L));
-					// user.setOption("last-login-ip", event.getPlayer().getAddress().getAddress().getHostAddress()); // somehow this won't work
+				if (!user.isVirtual()) { // Update name only if user exists in config
+					user.setOption("name", event.getPlayer().getName());
 				}
+				if (!config.shouldLogPlayers()) {
+					return;
+				}
+
+				user.setOption("last-login-time", Long.toString(System.currentTimeMillis() / 1000L));
+				// user.setOption("last-login-ip", event.getPlayer().getAddress().getAddress().getHostAddress()); // somehow this won't work
 			} catch (Throwable t) {
 				ErrorReport.handleError("While login cleanup event", t);
 			}
@@ -446,15 +362,11 @@ public class PermissionsEx extends JavaPlugin implements NativeInterface {
 		@EventHandler
 		public void onPlayerQuit(PlayerQuitEvent event) {
 			try {
-				PermissionUser user = getPermissionsManager().getUser(event.getPlayer());
-				if (!user.isVirtual()) {
-					if (config.shouldLogPlayers()) {
-						user.setOption("last-logout-time", Long.toString(System.currentTimeMillis() / 1000L));
-					}
+			if (config.shouldLogPlayers()) {
+				getPermissionsManager().getUser(event.getPlayer()).setOption("last-logout-time", Long.toString(System.currentTimeMillis() / 1000L));
+			}
 
-					user.getName(); // Set name if user was created during server run
-				}
-				getPermissionsManager().resetUser(event.getPlayer());
+			getPermissionsManager().resetUser(event.getPlayer());
 			} catch (Throwable t) {
 				ErrorReport.handleError("While logout cleanup event", t);
 			}

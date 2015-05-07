@@ -47,15 +47,11 @@ public class SuperpermsListener implements Listener {
 			attach = player.addAttachment(plugin);
 			attachments.put(player.getUniqueId(), attach);
 			attach.setPermission(playerPerm, true);
-			attach.setPermission(playerOptionPerm, true);
 		}
 
 		PermissionUser user = plugin.getPermissionsManager().getUser(player);
 		if (user != null) {
-			if (user.isDebug()) {
-				plugin.getLogger().info("Updating superperms for player " + player.getName());
-			}
-			updatePlayerPermission(playerPerm, user, worldName);
+			updatePlayerPermission(playerPerm, player, user, worldName);
 			updatePlayerMetadata(playerOptionPerm, user, worldName);
 			player.recalculatePermissions();
 		}
@@ -73,12 +69,7 @@ public class SuperpermsListener implements Listener {
 		final String name = permissionName(player, suffix);
 		Permission perm = plugin.getServer().getPluginManager().getPermission(name);
 		if (perm == null) {
-			perm = new Permission(name, "Internal permission for PEX. DO NOT SET DIRECTLY", PermissionDefault.FALSE) {
-				@Override
-				public void recalculatePermissibles() {
-					// no-op
-				}
-			};
+			perm = new Permission(name, "Internal permission for PEX. DO NOT SET DIRECTLY", PermissionDefault.FALSE);
 			plugin.getServer().getPluginManager().addPermission(perm);
 		}
 
@@ -86,8 +77,9 @@ public class SuperpermsListener implements Listener {
 
 	}
 
-	private void updatePlayerPermission(Permission permission, PermissionUser user, String worldName) {
+	private void updatePlayerPermission(Permission permission, Player player, PermissionUser user, String worldName) {
 		permission.getChildren().clear();
+		permission.getChildren().put(permissionName(player, ".options"), true);
 		for (String perm : user.getPermissions(worldName)) {
 			boolean value = true;
 			if (perm.startsWith("-")) {
@@ -150,23 +142,9 @@ public class SuperpermsListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerLogin(PlayerLoginEvent event) {
-		if (!plugin.requiresLateUserSetup()) {
-			handleLogin(event);
-		}
-	}
-
-	@EventHandler
-	public void onPlayerLoginLate(PlayerLoginEvent event) {
-		if (plugin.requiresLateUserSetup()) {
-			handleLogin(event);
-		}
-	}
-
-	private void handleLogin(PlayerLoginEvent event) {
 		try {
 			final Player player = event.getPlayer();
 			// Because player world is inaccurate in the login event (at least with MV), start with null world and then reset to the real world in join event
-			removeAttachment(player);
 			updateAttachment(player, null);
 		} catch (Throwable t) {
 			ErrorReport.handleError("Superperms event login", t);
@@ -178,10 +156,6 @@ public class SuperpermsListener implements Listener {
 		if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
 			try {
 				removeAttachment(event.getPlayer());
-				Player player = plugin.getServer().getPlayer(event.getPlayer().getUniqueId());
-				if (player != null && player.isOnline()) {
-					updateAttachment(player);
-				}
 			} catch (Throwable t) {
 				ErrorReport.handleError("Superperms event login denied", t);
 			}
@@ -207,18 +181,12 @@ public class SuperpermsListener implements Listener {
 
 				case PERMISSIONS_CHANGED:
 				case TIMEDPERMISSION_EXPIRED:
-					if (user.isDebug()) {
-						plugin.getLogger().info("Updating superperms permissions for player " + p.getName());
-					}
-					updatePlayerPermission(getCreateWrapper(p, ""), user, p.getWorld().getName());
+					updatePlayerPermission(getCreateWrapper(p, ""), p, user, p.getWorld().getName());
 					p.recalculatePermissions();
 					break;
 
 				case OPTIONS_CHANGED:
 				case INFO_CHANGED:
-					if (user.isDebug()) {
-						plugin.getLogger().info("Updating superperms metadata for player " + p.getName());
-					}
 					updatePlayerMetadata(getCreateWrapper(p, ".options"), user, p.getWorld().getName());
 					p.recalculatePermissions();
 					break;

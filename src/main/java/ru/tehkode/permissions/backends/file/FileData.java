@@ -11,47 +11,87 @@ import java.util.logging.Level;
 
 public class FileData implements PermissionsUserData, PermissionsGroupData {
 	protected transient final FileConfig config;
+	private String nodePath, entityName;
+	private final String basePath;
 	private ConfigurationSection node;
 	protected boolean virtual = true;
 	private final String parentPath;
 
-	public FileData(ConfigurationSection node, String parentPath) {
-		this.config = (FileConfig) node.getRoot();
-		this.node = node;
-		this.virtual = node.getParent().getConfigurationSection(node.getName()) == null;
+	public FileData(String basePath, String name, FileConfig config, String parentPath) {
+		this.config = config;
+		this.basePath = basePath;
+		this.node = findNode(name);
 		this.parentPath = parentPath;
 	}
 
-	@Override
-	public String getIdentifier() {
-		return node.getName();
-	}
+	private ConfigurationSection findExistingNode(String entityName, boolean set) {
+		String nodePath = FileBackend.buildPath(basePath, entityName);
 
-	@Override
-	public boolean setIdentifier(String identifier) {
-		String caseCorrectedIdentifier = config.isLowerCased(node.getParent().getCurrentPath()) ? identifier.toLowerCase() : identifier;
-		ConfigurationSection existing = node.getParent().getConfigurationSection(identifier);
-		if (existing == null && config.isLowerCased(node.getParent().getCurrentPath())) {
-			ConfigurationSection users = node.getParent();
+		ConfigurationSection entityNode = this.config.getConfigurationSection(nodePath);
 
-			if (users != null) {
-				for (Map.Entry<String, Object> entry : users.getValues(false).entrySet()) {
-					if (entry.getKey().equalsIgnoreCase(caseCorrectedIdentifier)
-							&& entry.getValue() instanceof ConfigurationSection) {
-						existing = (ConfigurationSection) entry.getValue();
+		if (entityNode != null) {
+			this.virtual = false;
+			if (set) {
+				this.nodePath = nodePath;
+				this.entityName = entityName;
+			}
+			return entityNode;
+		}
+
+		ConfigurationSection users = this.config.getConfigurationSection(basePath);
+
+		if (users != null) {
+			for (Map.Entry<String, Object> entry : users.getValues(false).entrySet()) {
+				if (entry.getKey().equalsIgnoreCase(entityName)
+						&& entry.getValue() instanceof ConfigurationSection) {
+					if (set) {
+						this.nodePath = FileBackend.buildPath(basePath, entry.getKey());
+						this.entityName = entry.getKey();
 					}
+					return (ConfigurationSection) entry.getValue();
 				}
 			}
 		}
 
-		if (existing != null) {
+		return null;
+	}
+
+	private ConfigurationSection findNode(String entityName) {
+		ConfigurationSection section = findExistingNode(entityName, true);
+		if (section != null) {
+			return section;
+		}
+
+		// Silly workaround for empty nodes
+		this.nodePath = FileBackend.buildPath(basePath, entityName);
+		section = this.config.createSection(nodePath);
+		this.entityName = entityName;
+		this.config.set(nodePath, null);
+		this.virtual = true; // Make sure
+
+		return section;
+
+	}
+
+	@Override
+	public String getIdentifier() {
+		return entityName;
+	}
+
+	@Override
+	public boolean setIdentifier(String identifier) {
+		ConfigurationSection section = findExistingNode(identifier, false);
+		if (section != null) {
 			return false;
 		}
-		ConfigurationSection oldNode = node;
-		this.node = oldNode.getParent().createSection(caseCorrectedIdentifier, node.getValues(false));
-		oldNode.getParent().set(oldNode.getName(), null);
-		if (this.isVirtual()) {
-			node.getParent().set(node.getName(), null);
+		String oldNodePath = this.nodePath;
+		this.nodePath = FileBackend.buildPath(basePath, identifier);
+		this.entityName = identifier;
+		if (!this.isVirtual()) {
+			this.config.set(oldNodePath, null);
+			this.config.set(nodePath, node);
+			this.save();
+
 		}
 		return true;
 	}
@@ -69,6 +109,7 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	@Override
 	public void setPermissions(List<String> permissions, String worldName) {
 		this.node.set(formatPath(worldName, "permissions"), permissions == null ? null : new ArrayList<>(permissions));
+		save();
 	}
 
 	@Override
@@ -108,23 +149,41 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 
 	@Override
 	public String getOption(String option, String worldName) {
-		return this.node.getString(formatPath(worldName, "options", option));
+		String ret = this.node.getString(formatPath(worldName, "options", option));
+		if (ret == null && (option.equals("prefix") || option.equals("suffix"))) {
+			ret = this.node.getString(formatPath(worldName, option));
+		}
+		return ret;
 	}
 
 	@Override
 	public void setOption(String option, String value, String worldName) {
 		this.node.set(formatPath(worldName, "options", option), value);
+		if (option.equals("prefix") || option.equals("suffix")) {
+			this.node.set(formatPath(worldName, option), null); // Delete old-style prefix/suffix
+		}
+		save();
+	}
+
+	private <K, V> void putIfNotNull(Map<K, V> map, K key, V value) {
+		if (value != null) {
+			map.put(key, value);
+		}
 	}
 
 	@Override
 	public Map<String, String> getOptions(String worldName) {
 		ConfigurationSection optionsSection = this.node.getConfigurationSection(formatPath(worldName, "options"));
+		Map<String, String> worldOptions = new LinkedHashMap<>();
+
+		putIfNotNull(worldOptions, "prefix", this.node.getString(formatPath(worldName, "prefix")));
+		putIfNotNull(worldOptions, "suffix", this.node.getString(formatPath(worldName, "suffix")));
 
 		if (optionsSection == null) {
-			return Collections.emptyMap();
+			return Collections.unmodifiableMap(worldOptions);
 		}
 
-		return Collections.unmodifiableMap(collectOptions(optionsSection));
+		return Collections.unmodifiableMap(collectOptions(worldOptions, optionsSection));
 
 	}
 
@@ -149,21 +208,21 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	@Override
 	public void save() {
 		if (isVirtual()) {
-			this.node.getParent().set(node.getName(), node);
+			this.config.set(nodePath, node);
 			virtual = false;
 		}
 
 		try {
 			this.config.save();
 		} catch (IOException e) {
-			PermissionsEx.getPermissionManager().getLogger().log(Level.SEVERE, "Error saving data for  " + node.getCurrentPath(), e);
+			PermissionsEx.getPermissionManager().getLogger().log(Level.SEVERE, "Error saving data for  " + nodePath, e);
 		}
 	}
 
 	@Override
 	public void remove() {
-		node.getParent().set(node.getName(), null);
-		this.virtual = true;
+		this.config.set(nodePath, null);
+		this.save();
 	}
 
 	@Override
@@ -181,7 +240,7 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	@Override
 	public List<String> getParents(String worldName) {
 		List<String> parents = this.node.getStringList(formatPath(worldName, parentPath));
-		for (Iterator<String> it = parents.iterator(); it.hasNext(); ) {
+		for (Iterator<String> it = parents.iterator(); it.hasNext();) {
 			final String test = it.next();
 			if (test == null || test.isEmpty()) {
 				it.remove();
@@ -198,6 +257,7 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	@Override
 	public void setParents(List<String> parents, String worldName) {
 		this.node.set(formatPath(worldName, parentPath), parents == null ? null : new ArrayList<>(parents));
+		save();
 	}
 
 	@Override
@@ -205,8 +265,18 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 		// Already loaded bc file
 	}
 
-	private Map<String, String> collectOptions(ConfigurationSection section) {
-		Map<String, String> options = new LinkedHashMap<>();
+	@Override
+	public boolean isDefault(String world) {
+		return this.node.getBoolean(formatPath(world, "default"));
+	}
+
+	@Override
+	public void setDefault(boolean def, String world) {
+		this.node.set(formatPath(world, "default"), def);
+		save();
+	}
+
+	private Map<String, String> collectOptions(Map<String, String> options, ConfigurationSection section) {
 		for (String key : section.getKeys(true)) {
 			if (section.isConfigurationSection(key)) {
 				continue;

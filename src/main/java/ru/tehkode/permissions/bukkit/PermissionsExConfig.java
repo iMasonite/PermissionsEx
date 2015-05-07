@@ -4,16 +4,11 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import ru.tehkode.permissions.backends.PermissionBackend;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author zml2008
  */
 public class PermissionsExConfig {
 	private final Configuration config;
-	private final PermissionsEx plugin;
 
 	private final boolean useNetEvents;
 	private final boolean debug;
@@ -24,15 +19,10 @@ public class PermissionsExConfig {
 	private final String defaultBackend;
 	private final boolean updaterEnabled;
 	private final boolean alwaysUpdate;
-	private final boolean informPlayers;
-	private final List<String> serverTags;
-	private final String basedir;
 
-	public PermissionsExConfig(Configuration config, PermissionsEx plugin) {
+	public PermissionsExConfig(Configuration config) {
 		this.config = config;
-		this.plugin = plugin;
 		this.useNetEvents = getBoolean("multiserver.use-netevents", true);
-		this.serverTags = getStringList("multiserver.server-tags");
 		this.debug = getBoolean("permissions.debug", false);
 		this.allowOps = getBoolean("permissions.allowOps", false);
 		this.userAddGroupsLast = getBoolean("permissions.user-add-groups-last", false);
@@ -41,8 +31,6 @@ public class PermissionsExConfig {
 		this.defaultBackend = getString("permissions.backend", PermissionBackend.DEFAULT_BACKEND);
 		this.updaterEnabled = getBoolean("updater", true);
 		this.alwaysUpdate = getBoolean("alwaysUpdate", false);
-		this.informPlayers = getBoolean("permissions.informplayers.changes", false);
-		this.basedir = getString("permissions.basedir", "plugins/PermissionsEx");
 	}
 
 	private boolean getBoolean(String key, boolean def) {
@@ -59,15 +47,6 @@ public class PermissionsExConfig {
 			config.set(key, ret);
 		}
 		return ret;
-	}
-
-	private List<String> getStringList(String key, String... def) {
-		List<String> ret = config.getStringList(key);
-		if (ret == null) {
-			ret = Arrays.asList(def);
-			config.set(key, ret);
-		}
-		return Collections.unmodifiableList(ret);
 	}
 
 	public boolean useNetEvents() {
@@ -102,21 +81,7 @@ public class PermissionsExConfig {
 		return updaterEnabled;
 	}
 
-	public boolean alwaysUpdate() {
-		return alwaysUpdate;
-	}
-
-	public boolean informPlayers() {
-		return informPlayers;
-	}
-
-	public List<String> getServerTags() {
-		return serverTags;
-	}
-
-	public String getBasedir() {
-		return basedir;
-	}
+	public boolean alwaysUpdate() { return alwaysUpdate; }
 
 	public ConfigurationSection getBackendConfig(String backend) {
 		ConfigurationSection section = config.getConfigurationSection("permissions.backends." + backend);
@@ -124,9 +89,5 @@ public class PermissionsExConfig {
 			section = config.createSection("permissions.backends." + backend);
 		}
 		return section;
-	}
-
-	public void save() {
-		plugin.saveConfig();
 	}
 }

@@ -18,8 +18,6 @@
  */
 package ru.tehkode.permissions.backends.memory;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,16 +41,6 @@ public class MemoryBackend extends PermissionBackend {
     public MemoryBackend(PermissionManager manager, ConfigurationSection config) throws PermissionBackendException {
         super(manager, config);
     }
-
-	@Override
-	public int getSchemaVersion() {
-		return -1;
-	}
-
-	@Override
-	protected void setSchemaVersion(int version) {
-		// no-op
-	}
 
 
 	@Override
@@ -95,6 +83,11 @@ public class MemoryBackend extends PermissionBackend {
 	}
 
 	@Override
+	public Set<String> getDefaultGroupNames(String worldName) {
+		return Collections.emptySet();
+	}
+
+	@Override
 	public List<String> getWorldInheritance(String world) {
 		return Collections.emptyList();
 	}
@@ -106,10 +99,5 @@ public class MemoryBackend extends PermissionBackend {
 
 	@Override
 	public void setWorldInheritance(String world, List<String> inheritance) {
-	}
-
-	@Override
-	public void writeContents(Writer writer) throws IOException {
-
 	}
 }

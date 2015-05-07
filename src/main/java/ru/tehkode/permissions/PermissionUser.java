@@ -18,16 +18,12 @@
  */
 package ru.tehkode.permissions;
 
-import com.google.common.collect.Maps;
-import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ru.tehkode.permissions.events.PermissionEntityEvent;
 import ru.tehkode.permissions.exceptions.RankingException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * @author code
@@ -61,25 +57,10 @@ public class PermissionUser extends PermissionEntity {
 		if (this.manager.shouldCreateUserRecords() && this.isVirtual()) {
 			this.getData().setParents(this.getOwnParentIdentifiers(null), null);
 		}
-		updateTimedGroups();
 
 		if (this.isDebug()) {
 			manager.getLogger().info("User " + this.getIdentifier() + " initialized");
 		}
-	}
-
-	@Override
-	public String getName() {
-		String name = getOwnOption("name", null, null);
-		if (name == null) {
-			Player player = getPlayer();
-			if (player != null) {
-				name = player.getName();
-				setOption("name", name);
-				return name;
-			}
-		}
-		return super.getName();
 	}
 
 	@Override
@@ -175,7 +156,6 @@ public class PermissionUser extends PermissionEntity {
 
 		if (lifetime > 0) {
 			this.setOption("group-" + groupName + "-until", Long.toString(System.currentTimeMillis() / 1000 + lifetime), worldName);
-			updateTimedGroups();
 		}
 	}
 
@@ -480,7 +460,7 @@ public class PermissionUser extends PermissionEntity {
 			promoterRank = promoter.getRank(ladderName);
 
 			if (promoterRank >= rank) {
-				throw new RankingException("Promoter don't have high enough rank to change " + this.getIdentifier() + "/" + getName() + "'s rank", this, promoter);
+				throw new RankingException("Promoter don't have high enough rank to change " + this.getIdentifier() + "'s rank", this, promoter);
 			}
 		}
 
@@ -488,15 +468,10 @@ public class PermissionUser extends PermissionEntity {
 	}
 
 	protected void swapGroups(PermissionGroup src, PermissionGroup dst) {
-		Validate.notNull(src);
-		Validate.notNull(dst);
-
 		List<PermissionGroup> groups = new ArrayList<>(this.getParents());
-		int indexOfSrcGroup = groups.indexOf(src);
 
-		Validate.isTrue(indexOfSrcGroup != -1);
-
-		groups.set(indexOfSrcGroup, dst);
+		groups.remove(src);
+		groups.add(dst);
 
 		this.setParents(groups);
 	}
@@ -522,9 +497,9 @@ public class PermissionUser extends PermissionEntity {
 
 	public Player getPlayer() {
 		try {
-			return Bukkit.getServer().getPlayer(UUID.fromString(getIdentifier()));
+			return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
 		} catch (Throwable ex) { // Not a UUID or method not implemented in server build
-			return Bukkit.getServer().getPlayerExact(getIdentifier());
+			return manager.getPlugin().getServer().getPlayerExact(getIdentifier());
 		}
 	}
 
@@ -581,44 +556,17 @@ public class PermissionUser extends PermissionEntity {
 		return super.explainExpression(expression);
 	}
 
-	protected void updateTimedGroups() {
-		long nextExpiration = Long.MAX_VALUE;
-		final Set<Map.Entry<String, String>> removeGroups = new HashSet<>();
-		for (Map.Entry<String, Map<String, String>> world : getAllOptions().entrySet()) {
-			for (Map.Entry<String, String> entry : world.getValue().entrySet()) {
-				final String group = getTimedGroupName(entry.getKey());
-				if (group == null) { // Not a timed group
-					continue;
-				}
-				long groupLifetime = Long.parseLong(entry.getValue());
-				if (groupLifetime > 0 && groupLifetime <= System.currentTimeMillis() / 1000) { // check for expiration
-					removeGroups.add(Maps.immutableEntry(group, world.getKey()));
-				} else {
-					nextExpiration = Math.min(nextExpiration, groupLifetime);
-				}
-			}
+	protected boolean checkMembership(PermissionGroup group, String worldName) {
+		int groupLifetime = this.getOwnOptionInteger("group-" + group.getIdentifier() + "-until", worldName, 0);
+
+		if (groupLifetime > 0 && groupLifetime < System.currentTimeMillis() / 1000) { // check for expiration
+			this.setOption("group-" + group.getIdentifier() + "-until", null, worldName); // remove option
+			this.removeGroup(group, worldName); // remove membership
+			// @TODO Make notification of player about expired memebership
+			return false;
 		}
 
-		for (Map.Entry<String, String> ent : removeGroups) {
-			this.setOption("group-" + ent.getKey() + "-until", null, ent.getValue()); // remove option
-			this.removeGroup(ent.getKey(), ent.getValue()); // remove membership
-			if (isDebug()) {
-				manager.getLogger().log(Level.INFO, ent.getValue() != null ? "Timed group '{0}' in world '{1}' expired from user {2}/{3}"
-						: "Timed group {0} expired from user {2}/{3}", new Object[]{ent.getKey(), ent.getValue(), getIdentifier(), getName()});
-			}
-		}
-
-		if (nextExpiration < Long.MAX_VALUE) {
-			// Schedule the next timed groups check with the permissions manager
-			manager.scheduleTimedGroupsCheck(nextExpiration, getIdentifier());
-		}
-	}
-
-	static String getTimedGroupName(String option) {
-		if (!option.startsWith("group-") && !option.endsWith("-until")) {
-			return null;
-		}
-		return option.substring("group-".length(), option.length() - "-until".length());
+		return true;
 	}
 
 	// Compatibility methods

@@ -184,9 +184,9 @@ public class UserCommands extends PermissionsCommand {
 
 		if (args.containsKey("newprefix")) {
 			user.setPrefix(args.get("newprefix"), worldName);
-			sender.sendMessage(describeUser(user) + "'s prefix" + (worldName != null ? " (in world \"" + worldName + "\") " : "") + " has been set to \"" + user.getPrefix() + "\"");
+			sender.sendMessage(describeUser(user) + "'s prefix" + (worldName != null ? " (in world \"" + worldName + "\") " : " ") + " has been set to \"" + user.getPrefix() + "\"");
 		} else {
-			sender.sendMessage(describeUser(user) + "'s prefix" + (worldName != null ? " (in world \"" + worldName + "\") " : "") + " is \"" + user.getPrefix() + "\"");
+			sender.sendMessage(describeUser(user) + "'s prefix" + (worldName != null ? " (in world \"" + worldName + "\") " : " ") + " is \"" + user.getPrefix() + "\"");
 		}
 	}
 
@@ -521,7 +521,7 @@ public class UserCommands extends PermissionsCommand {
 
 
 		sender.sendMessage(ChatColor.WHITE + "User \"" + describeUser(user) + "\" added to group \"" + groupName + "\"!");
-		this.informPlayer(plugin, user, "You are assigned to group \"" + groupName + "\"");
+		this.informPlayer(plugin, user, "You are assigned to \"" + groupName + "\" group");
 	}
 
 	@Command(name = "pex",

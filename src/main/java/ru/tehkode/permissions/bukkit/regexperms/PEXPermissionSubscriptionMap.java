@@ -122,7 +122,7 @@ public class PEXPermissionSubscriptionMap extends HashMap<String, Map<Permissibl
 
 		@Override
 		public boolean containsKey(Object key) {
-			return backing.containsKey(key) || (key instanceof Permissible && ((Permissible) key).isPermissionSet(permission));
+			return backing.containsKey(key);
 		}
 
 		@Override

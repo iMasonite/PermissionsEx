@@ -1,11 +1,5 @@
 package ru.tehkode.permissions.bukkit;
 
-import java.io.*;
-import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -13,13 +7,20 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import ru.tehkode.permissions.PermissionManager;
-import ru.tehkode.permissions.backends.PermissionBackend;
 import ru.tehkode.utils.StringUtils;
 
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
- * Error report builder for PEX that provides additional information on top of report
- * and generates a short URL to create a GitHub issue.
+ * Error report builder for PEX that provides additional information on top of report and generates a short URL to create a github issue
  */
 public class ErrorReport {
 	private static final ExecutorService ASYNC_EXEC = Executors.newSingleThreadExecutor();
@@ -60,40 +61,36 @@ public class ErrorReport {
 	}
 
 	/**
-	 * Returns a git.io shortened version of the input
+	 * Returns a bit.ly shortened version of the input
 	 *
-	 * @param longUrl The input url
-	 * @return The shortened URL, or the input url if an error occurs
+	 * @param url The input url
+	 * @return The shortened URl, or the input url if an error occurs
 	 */
-	public static String shortenURL(String longUrl) {
-		if (longUrl == null) {
-			return longUrl;
+	public static String shortenURL(String url) {
+		URL shortUrlApi;
+		try {
+			shortUrlApi = new URL("http://is.gd/create.php?format=simple&url=" + URLEncoder.encode(url, UTF8_ENCODING));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return url;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return url;
 		}
 
+		URLConnection conn;
 		try {
-			URL url = new URL("http://git.io/create");
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoOutput(true);
-			connection.setRequestMethod("POST");
-			connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-			String urlParameters = "url=" + URLEncoder.encode(longUrl, UTF8_ENCODING);
-
-			DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-			wr.writeBytes(urlParameters);
-			wr.flush();
-			wr.close();
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line;
-			StringBuilder sb = new StringBuilder();
-			while ((line = rd.readLine()) != null) {
-				sb.append(line);
-			}
-
-			return "http://git.io/" + sb.toString();
-		} catch (Exception e) {
-			return longUrl;
+			conn = shortUrlApi.openConnection();
+			return StringUtils.readStream(conn.getInputStream());
+		} catch (IOException ex) {
+			/*ex.printStackTrace(); // Debug code, uncomment if needed
+			try {
+				if (conn != null) {
+					return StringUtils.readStream(((HttpURLConnection) conn).getErrorStream());
+				}
+			} catch (IOException ignore) {
+			}*/
+			return url;
 		}
 	}
 
@@ -106,15 +103,15 @@ public class ErrorReport {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 
-			Map<String, Object> request = new HashMap<>();		// {
-			request.put("description", "PEX Error Report");	   //	 "description": "PEX Error Report",
-			request.put("public", "false");					   //	 "public": false,
-			Map<String, Object> filesMap = new HashMap<>();	   //	 "files": {
-			Map<String, Object> singleFileMap = new HashMap<>();  //		 "report.md": {
-			singleFileMap.put("content", text);				   //			 "content": <text>
-			filesMap.put("report.md", singleFileMap);			 //		 }
-			request.put("files", filesMap);					   //	 }
-																  // }
+			Map<String, Object> request = new HashMap<>();       // {
+			request.put("description", "PEX Error Report");       //     "description": "PEX Error Report",
+			request.put("public", "false");                       //     "public": false,
+			Map<String, Object> filesMap = new HashMap<>();      //     "files": {
+			Map<String, Object> singleFileMap = new HashMap<>(); //         "report.md": {
+			singleFileMap.put("content", text);                   //             "content": <text>
+			filesMap.put("report.md", singleFileMap);             //         }
+			request.put("files", filesMap);                       //     }
+			// }
 			yaml.dump(request, (requestWriter = new OutputStreamWriter(conn.getOutputStream())));
 
 			Map<?, ?> data = (Map<?, ?>) yaml.load((responseReader = conn.getInputStream()));
@@ -216,25 +213,23 @@ public class ErrorReport {
 	public static ErrorReport withException(String cause, Throwable error) {
 		Builder builder = builder(error);
 
-		PermissionsEx pexPlugin = (PermissionsEx) PermissionsEx.getPlugin();
-		builder.addHeading("Basic info")
-				.addText("**Server version:** " + Bukkit.getBukkitVersion() + " *running on* " + Bukkit.getVersion())
-				.addText("**Online mode:** " + Bukkit.getOnlineMode())
-				.addText("**Java version:** " + Runtime.class.getPackage().getImplementationVendor() + " - " + Runtime.class.getPackage().getImplementationTitle() + " - " + Runtime.class.getPackage().getImplementationVersion());
+		Plugin pexPlugin = PermissionsEx.getPlugin();
+		builder.addHeading("Basic info").
+				addText("**Bukkit version:** " + Bukkit.getBukkitVersion() + " running on " + Bukkit.getVersion());
 
 		if (pexPlugin != null) {
+			StringBuilder pluginList = new StringBuilder("**Plugins:** (*italics* are disabled)\n");
 			Plugin[] plugins = pexPlugin.getServer().getPluginManager().getPlugins();
-			StringBuilder pluginList = new StringBuilder("**Plugins (" + plugins.length + "):** (~~Strikeout~~ means disabled)\n");
 			for (Plugin plugin : plugins) {
 				pluginList.append("- ");
 				if (plugin.getDescription() != null) {
 					if (plugin.isEnabled()) {
-						pluginList.append(plugin.getDescription().getName() + " *v" + plugin.getDescription().getVersion() + "*");
+						pluginList.append(plugin.getDescription().getFullName());
 					} else {
-						pluginList.append("~~").append(plugin.getDescription().getName() + " *v" + plugin.getDescription().getVersion() + "*").append("~~");
+						pluginList.append("*").append(plugin.getDescription().getFullName()).append("*");
 					}
 				} else {
-					pluginList.append("Unknown Plugin!");
+					pluginList.append("Unknown");
 				}
 
 				pluginList.append(" (```").append(plugin.getClass().getName()).append("```)").append('\n');
@@ -266,7 +261,6 @@ public class ErrorReport {
 		final File mainConfigFile = pexPlugin != null ? new File(pexPlugin.getDataFolder(), "config.yml") : null;
 		String configuration;
 		String permissionsDb = "Permissions configuration could not be read. Does it exist?";
-		String activeBackend = "unknown";
 
 		if (mainConfigFile == null) {
 			configuration = "PEX plugin was inaccessible!";
@@ -290,38 +284,19 @@ public class ErrorReport {
 				.addCode(configuration, "yaml");
 
 		// Permissions database
-		if (pexPlugin != null) {
-			PermissionManager manager = pexPlugin.getPermissionsManager();
-			if (manager != null) {
-				PermissionBackend backend = manager.getBackend();
+		if (pexPlugin != null && pexConfig.getString("permissions.backend", "file").equalsIgnoreCase("file")) {
+			File file = new File(pexPlugin.getDataFolder(), pexConfig.getString("permissions.backends.file.file", "permissions.yml"));
+			if (file.exists()) {
 				try {
-					if (backend != null) {
-						final StringWriter writer = new StringWriter();
-						backend.writeContents(writer);
-						permissionsDb = writer.toString();
-						activeBackend = backend.toString();
-					}
-				} catch (Throwable t) {
-					// Continue
+					permissionsDb = StringUtils.readStream(new FileInputStream(file));
+				} catch (IOException ignore) {
 				}
 			}
-			if (permissionsDb == null && pexConfig.getString("permissions.backends." + pexConfig.getString("permissions.backend", "file") + ".type", "file").equalsIgnoreCase("file")) {
-				File file = new File(pexPlugin.getDataFolder(), pexConfig.getString("permissions.backends.file.file", "permissions.yml"));
-				if (file.exists()) {
-					try {
-						permissionsDb = StringUtils.readStream(new FileInputStream(file));
-						activeBackend = "file";
-					} catch (IOException ignore) {
-					}
-				}
-			}
-		}
-		if (permissionsDb == null) {
+		} else {
 			permissionsDb = "Backend is not file or plugin was not accessible, see configuration file for details";
 		}
 
 		builder.addHeading("Permissions database");
-		builder.addText("**Active backend:** " + activeBackend);
 		if (!successfulLoad) {
 			builder.addText("PEX configuration could not be successfully loaded, attempting to read default permissions file");
 		}

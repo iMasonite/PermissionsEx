@@ -23,11 +23,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -55,7 +53,7 @@ public abstract class PermissionsCommand implements CommandListener {
 	}
 
 	protected void informPlayer(PermissionsEx plugin, PermissionUser user, String message) {
-		if (!plugin.getConfiguration().informPlayers()) {
+		if (!plugin.getConfig().getBoolean("permissions.informplayers.changes", false)) {
 			return; // User informing is disabled
 		}
 
@@ -82,24 +80,13 @@ public abstract class PermissionsCommand implements CommandListener {
 		}
 	}
 
-	private String nameToUUID(String name) {
-		OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(name);
-		if (player != null) {
-			UUID uid = player.getUniqueId();
-			if (uid != null) {
-				return uid.toString();
-			}
-		}
-		return name;
-	}
-
 	protected String autoCompletePlayerName(String playerName, String argName) {
 		if (playerName == null) {
 			return null;
 		}
 
 		if (playerName.startsWith("#")) {
-			return nameToUUID(playerName.substring(1));
+			return playerName.substring(1);
 		}
 
 		List<String> players = new LinkedList<>();
@@ -118,14 +105,11 @@ public abstract class PermissionsCommand implements CommandListener {
 		// Collect registered PEX user names
 		for (String user : PermissionsEx.getPermissionManager().getUserNames()) {
 			if (user.equalsIgnoreCase(playerName)) {
-				return nameToUUID(user);
+				return user;
 			}
 
-			if (user.toLowerCase().startsWith(playerName.toLowerCase())) {
-				final String uid = nameToUUID(user);
-				if (!players.contains(uid)) {
-					players.add(uid);
-				}
+			if (user.toLowerCase().startsWith(playerName.toLowerCase()) && !players.contains(user)) {
+				players.add(user);
 			}
 		}
 
@@ -295,7 +279,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			buffer.append(printHierarchy(group, worldName, level + 1));
 
 			for (PermissionUser user : group.getUsers(worldName)) {
-				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(describeUser(user)).append("\n");
+				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(user.getIdentifier()).append("\n");
 			}
 		}
 
@@ -343,8 +327,8 @@ public abstract class PermissionsCommand implements CommandListener {
 			}
 		}
 
-		if (level == 0 && world != null && allPermissions.get(null) != null) { // default world permissions
-			permissions.addAll(sprintPermissions("common", allPermissions.get(null)));
+		if (level == 0 && allPermissions.get("") != null) { // default world permissions
+			permissions.addAll(sprintPermissions("common", allPermissions.get("")));
 		}
 
 		return permissions;

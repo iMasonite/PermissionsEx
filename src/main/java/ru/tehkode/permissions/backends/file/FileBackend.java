@@ -169,6 +169,12 @@ public class FileBackend extends PermissionBackend {
 	}
 	
 	@Override
+	public Collection<String> getUserIdentifiers() {
+		ConfigurationSection users = this.permissions.getConfigurationSection("users");
+		return users != null ? users.getKeys(false) : Collections.<String> emptyList();
+	}
+	
+	@Override
 	public Collection<String> getUserNames() {
 		ConfigurationSection users = this.permissions.getConfigurationSection("users");
 		
@@ -280,7 +286,7 @@ public class FileBackend extends PermissionBackend {
 	public void close() throws PermissionBackendException {
 		executor.shutdown();
 		try {
-			executor.awaitTermination(30, TimeUnit.SECONDS);
+			executor.awaitTermination(50 * 10, TimeUnit.MILLISECONDS);
 		}
 		catch (InterruptedException e) {
 			throw new PermissionBackendException(e);

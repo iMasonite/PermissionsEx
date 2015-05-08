@@ -73,24 +73,23 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 		section = this.config.createSection(nodePath);
 		this.entityName = entityName;
 		this.config.set(nodePath, null);
-		this.virtual = true; // Make sure
 		
 		return section;
 		
 	}
 	
 	@Override
-	public String getName() {
+	public String getIdentifier() {
 		return entityName;
 	}
 	
 	@Override
-	public boolean setName(String name) {
-		ConfigurationSection section = findExistingNode(name, false);
+	public boolean setIdentifier(String identifier) {
+		ConfigurationSection section = findExistingNode(identifier, false);
 		if (section != null) return false;
 		String oldNodePath = this.nodePath;
-		this.nodePath = FileBackend.buildPath(basePath, name);
-		this.entityName = name;
+		this.nodePath = FileBackend.buildPath(basePath, identifier);
+		this.entityName = identifier;
 		if (!this.isVirtual()) {
 			this.config.set(oldNodePath, null);
 			this.config.set(nodePath, node);
@@ -159,9 +158,6 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	@Override
 	public void setOption(String option, String value, String worldName) {
 		this.node.set(formatPath(worldName, "options", option), value);
-		if (option.equals("prefix") || option.equals("suffix")) {
-			this.node.set(formatPath(worldName, option), null); // Delete old-style prefix/suffix
-		}
 		save();
 	}
 	
@@ -179,7 +175,7 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 		putIfNotNull(worldOptions, "prefix", this.node.getString(formatPath(worldName, "prefix")));
 		putIfNotNull(worldOptions, "suffix", this.node.getString(formatPath(worldName, "suffix")));
 		
-		if (optionsSection == null) return Collections.unmodifiableMap(worldOptions);
+		if (optionsSection == null) return Collections.emptyMap();
 		
 		return Collections.unmodifiableMap(collectOptions(worldOptions, optionsSection));
 		

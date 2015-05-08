@@ -84,7 +84,7 @@ public class SQLConnection implements AutoCloseable {
 	}
 	
 	protected void checkConnection() throws SQLException {
-		if (this.backend.dbDriver.equals("sqlite")) return;
+		if (this.db.getClass().getName().startsWith("org.sqlite")) return;
 		
 		if (!this.db.isValid(3)) throw new SQLException("Lost connection with database!");
 	}

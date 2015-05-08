@@ -58,6 +58,11 @@ public class MemoryBackend extends PermissionBackend {
 	}
 	
 	@Override
+	public Collection<String> getUserIdentifiers() {
+		return Collections.emptySet();
+	}
+	
+	@Override
 	public Collection<String> getUserNames() {
 		return Collections.emptySet();
 	}

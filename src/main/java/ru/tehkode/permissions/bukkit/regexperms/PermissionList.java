@@ -17,7 +17,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /** @author zml2008 */
-@SuppressWarnings({ "serial", "rawtypes", "unchecked" })
+@SuppressWarnings({ "serial", "unchecked", "rawtypes" })
 public class PermissionList extends HashMap<String, Permission> {
 	private static FieldReplacer<PluginManager, Map> INJECTOR;
 	

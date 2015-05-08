@@ -11,7 +11,7 @@ import org.bukkit.permissions.PermissibleBase;
 
 /** This class handles injection of {@link Permissible}s into {@link Player}s for various server
  * implementations. */
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public abstract class PermissibleInjector {
 	protected final String clazzName, fieldName;
 	protected final boolean copyValues;

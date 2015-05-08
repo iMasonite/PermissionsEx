@@ -18,7 +18,6 @@ public class PermissionsExConfig {
 	private final boolean createUserRecords;
 	private final String defaultBackend;
 	private final boolean updaterEnabled;
-	private final boolean alwaysUpdate;
 	
 	public PermissionsExConfig(Configuration config) {
 		this.config = config;
@@ -30,7 +29,6 @@ public class PermissionsExConfig {
 		this.createUserRecords = getBoolean("permissions.createUserRecords", false);
 		this.defaultBackend = getString("permissions.backend", PermissionBackend.DEFAULT_BACKEND);
 		this.updaterEnabled = getBoolean("updater", true);
-		this.alwaysUpdate = getBoolean("alwaysUpdate", false);
 	}
 	
 	private boolean getBoolean(String key, boolean def) {
@@ -79,10 +77,6 @@ public class PermissionsExConfig {
 	
 	public boolean updaterEnabled() {
 		return updaterEnabled;
-	}
-	
-	public boolean alwaysUpdate() {
-		return alwaysUpdate;
 	}
 	
 	public ConfigurationSection getBackendConfig(String backend) {

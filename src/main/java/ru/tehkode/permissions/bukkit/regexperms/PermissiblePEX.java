@@ -42,7 +42,7 @@ import ru.tehkode.utils.FieldReplacer;
  * values.
  * <p/>
  * Class should be thread-safe */
-@SuppressWarnings({ "serial", "rawtypes", "unchecked" })
+@SuppressWarnings({ "serial", "unchecked", "rawtypes" })
 public class PermissiblePEX extends PermissibleBase {
 	private static final FieldReplacer<PermissibleBase, Map> PERMISSIONS_FIELD = new FieldReplacer<>(PermissibleBase.class, "permissions", Map.class);
 	private static final FieldReplacer<PermissibleBase, List> ATTACHMENTS_FIELD = new FieldReplacer<>(PermissibleBase.class, "attachments", List.class);
@@ -66,7 +66,6 @@ public class PermissiblePEX extends PermissibleBase {
 	protected final PermissionsEx plugin;
 	private Permissible previousPermissible = null;
 	protected final Map<String, PermissionCheckResult> cache = new ConcurrentHashMap<>();
-	private final Object permissionsLock = new Object();
 	
 	public PermissiblePEX(Player player, PermissionsEx plugin) {
 		super(player);
@@ -157,18 +156,16 @@ public class PermissiblePEX extends PermissibleBase {
 	@Override
 	public void recalculatePermissions() {
 		if (cache != null && permissions != null && attachments != null) {
-			synchronized (permissionsLock) {
-				clearPermissions();
-				cache.clear();
-				for (ListIterator<PermissionAttachment> it = this.attachments.listIterator(this.attachments.size()); it.hasPrevious();) {
-					PermissionAttachment attach = it.previous();
-					calculateChildPerms(attach.getPermissions(), false, attach);
-				}
-				
-				for (Permission p : player.getServer().getPluginManager().getDefaultPermissions(isOp())) {
-					this.permissions.put(p.getName(), new PermissionAttachmentInfo(player, p.getName(), null, true));
-					calculateChildPerms(p.getChildren(), false, null);
-				}
+			clearPermissions();
+			cache.clear();
+			for (ListIterator<PermissionAttachment> it = this.attachments.listIterator(this.attachments.size()); it.hasPrevious();) {
+				PermissionAttachment attach = it.previous();
+				calculateChildPerms(attach.getPermissions(), false, attach);
+			}
+			
+			for (Permission p : player.getServer().getPluginManager().getDefaultPermissions(isOp())) {
+				this.permissions.put(p.getName(), new PermissionAttachmentInfo(player, p.getName(), null, true));
+				calculateChildPerms(p.getChildren(), false, null);
 			}
 		}
 	}
@@ -192,9 +189,7 @@ public class PermissiblePEX extends PermissibleBase {
 	
 	@Override
 	public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-		synchronized (permissionsLock) {
-			return new LinkedHashSet<>(permissions.values());
-		}
+		return new LinkedHashSet<>(permissions.values());
 	}
 	
 	private PermissionCheckResult checkSingle(String expression, String permission, boolean value) {
@@ -221,11 +216,9 @@ public class PermissiblePEX extends PermissibleBase {
 			
 			res = PermissionCheckResult.UNDEFINED;
 			
-			synchronized (permissionsLock) {
-				for (PermissionAttachmentInfo pai : permissions.values()) {
-					if ((res = checkSingle(pai.getPermission(), permission, pai.getValue())) != PermissionCheckResult.UNDEFINED) {
-						break;
-					}
+			for (PermissionAttachmentInfo pai : permissions.values()) {
+				if ((res = checkSingle(pai.getPermission(), permission, pai.getValue())) != PermissionCheckResult.UNDEFINED) {
+					break;
 				}
 			}
 			if (res == PermissionCheckResult.UNDEFINED) {

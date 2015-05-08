@@ -46,7 +46,7 @@ public class SQLBackend extends PermissionBackend {
 	protected Map<String, List<String>> worldInheritanceCache = new HashMap<>();
 	private Map<String, Object> tableNames;
 	private BasicDataSource ds;
-	protected final String dbDriver;
+	private String dbDriver;
 	private final ExecutorService executor;
 	
 	public SQLBackend(PermissionManager manager, ConfigurationSection config) throws PermissionBackendException {
@@ -64,18 +64,11 @@ public class SQLBackend extends PermissionBackend {
 		dbDriver = dbUri.split(":", 2)[0];
 		
 		this.ds = new BasicDataSource();
-		String driverClass = getDriverClass(dbDriver);
-		if (driverClass != null) {
-			this.ds.setDriverClassName(driverClass);
-		}
 		this.ds.setUrl("jdbc:" + dbUri);
 		this.ds.setUsername(dbUser);
 		this.ds.setPassword(dbPassword);
 		this.ds.setMaxActive(20);
 		this.ds.setMaxWait(200); // 4 ticks
-		if (this.dbDriver.equals("mysql")) {
-			this.ds.addConnectionProperty("autoReconnect", "true");
-		}
 		
 		try (SQLConnection conn = getSQL()) {
 			conn.checkConnection();
@@ -94,24 +87,17 @@ public class SQLBackend extends PermissionBackend {
 		this.deployTables();
 	}
 	
-	protected static String getDriverClass(String alias) {
-		if (alias.equals("mysql")) return "com.mysql.jdbc.Driver";
-		else if (alias.equals("sqlite")) return "org.sqlite.JDBC";
-		else if (alias.matches("postgres?")) return "org.postgresql.Driver";
-		return null;
-	}
-	
 	public SQLConnection getSQL() throws SQLException {
 		if (ds == null) throw new SQLException("SQL connection information was not correct, could not retrieve connection");
 		return new SQLConnection(ds.getConnection(), this);
 	}
 	
-	public String getTableName(String name) {
+	public String getTableName(String identifier) {
 		Map<String, Object> tableNames = this.tableNames;
-		if (tableNames == null) return name;
+		if (tableNames == null) return identifier;
 		
-		Object ret = tableNames.get(name);
-		if (ret == null) return name;
+		Object ret = tableNames.get(identifier);
+		if (ret == null) return identifier;
 		return ret.toString();
 	}
 	
@@ -174,6 +160,16 @@ public class SQLBackend extends PermissionBackend {
 	public Collection<String> getGroupNames() {
 		try (SQLConnection conn = getSQL()) {
 			return SQLData.getEntitiesNames(conn, SQLData.Type.GROUP, false);
+		}
+		catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public Collection<String> getUserIdentifiers() {
+		try (SQLConnection conn = getSQL()) {
+			return SQLData.getEntitiesNames(conn, SQLData.Type.USER, false);
 		}
 		catch (SQLException e) {
 			throw new RuntimeException(e);

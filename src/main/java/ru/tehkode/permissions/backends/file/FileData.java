@@ -80,17 +80,17 @@ public class FileData implements PermissionsUserData, PermissionsGroupData {
 	}
 	
 	@Override
-	public String getIdentifier() {
+	public String getName() {
 		return entityName;
 	}
 	
 	@Override
-	public boolean setIdentifier(String identifier) {
-		ConfigurationSection section = findExistingNode(identifier, false);
+	public boolean setName(String name) {
+		ConfigurationSection section = findExistingNode(name, false);
 		if (section != null) return false;
 		String oldNodePath = this.nodePath;
-		this.nodePath = FileBackend.buildPath(basePath, identifier);
-		this.entityName = identifier;
+		this.nodePath = FileBackend.buildPath(basePath, name);
+		this.entityName = name;
 		if (!this.isVirtual()) {
 			this.config.set(oldNodePath, null);
 			this.config.set(nodePath, node);

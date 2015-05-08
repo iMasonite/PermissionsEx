@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface PermissionsData {
+@SuppressWarnings({"javadoc"})public interface PermissionsData {
 	/** Preload data from entity */
 	public void load();
 	
-	/** Returns the current identifier of the user
+	/** Returns the current name of the user
 	 * 
 	 * @return */
-	public String getIdentifier();
+	public String getName();
 	
 	/** Returns all permissions for specified world
 	 * 

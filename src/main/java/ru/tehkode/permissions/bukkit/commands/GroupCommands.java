@@ -28,8 +28,10 @@ import ru.tehkode.utils.StringUtils;
 
 public class GroupCommands extends PermissionsCommand {
 	
-	@Command(name = "pex", syntax = "groups list [world]",
-			permission = "permissions.manage.groups.list", description = "List all registered groups")
+	@Command(name = "pex",
+			syntax = "groups list [world]",
+			permission = "permissions.manage.groups.list",
+			description = "List all registered groups")
 	public void groupsList(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		List<PermissionGroup> groups = plugin.getPermissionsManager().getGroupList();
 		String worldName = this.autoCompleteWorldName(args.get("world"));
@@ -41,23 +43,28 @@ public class GroupCommands extends PermissionsCommand {
 				rank = " (rank: " + group.getRank() + "@" + group.getRankLadder() + ") ";
 			}
 			
-			sender.sendMessage(String.format("  %s %s %s %s[%s]", group.getIdentifier(), " #" + group.getWeight(), rank, ChatColor.DARK_GREEN, StringUtils.implode(group.getParentIdentifiers(worldName), ", ")));
+			sender.sendMessage(String.format("  %s %s %s %s[%s]", group.getName(), " #" + group.getWeight(), rank, ChatColor.DARK_GREEN, StringUtils.implode(group.getParentNames(worldName), ", ")));
 		}
 	}
 	
-	@Command(name = "pex", syntax = "groups", permission = "permissions.manage.groups.list",
+	@Command(name = "pex",
+			syntax = "groups",
+			permission = "permissions.manage.groups.list",
 			description = "List all registered groups (alias)")
 	public void groupsListAlias(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.groupsList(plugin, sender, args);
 	}
 	
-	@Command(name = "pex", syntax = "group", permission = "permissions.manage.groups.list",
+	@Command(name = "pex",
+			syntax = "group",
+			permission = "permissions.manage.groups.list",
 			description = "List all registered groups (alias)")
 	public void groupsListAnotherAlias(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.groupsList(plugin, sender, args);
 	}
 	
-	@Command(name = "pex", syntax = "group <group> weight [weight]",
+	@Command(name = "pex",
+			syntax = "group <group> weight [weight]",
 			permission = "permissions.manage.groups.weight.<group>",
 			description = "Print or set group weight")
 	public void groupPrintSetWeight(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -79,10 +86,11 @@ public class GroupCommands extends PermissionsCommand {
 			}
 		}
 		
-		sender.sendMessage("Group " + group.getIdentifier() + " have " + group.getWeight() + " calories.");
+		sender.sendMessage("Group " + group.getName() + " have " + group.getWeight() + " calories.");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> toggle debug",
+	@Command(name = "pex",
+			syntax = "group <group> toggle debug",
 			permission = "permissions.manage.groups.debug.<group>",
 			description = "Toggle debug mode for group")
 	public void groupToggleDebug(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -96,10 +104,11 @@ public class GroupCommands extends PermissionsCommand {
 		
 		group.setDebug(!group.isDebug());
 		
-		sender.sendMessage("Debug mode for group " + group.getIdentifier() + " have been " + (group.isDebug() ? "enabled" : "disabled") + "!");
+		sender.sendMessage("Debug mode for group " + group.getName() + " have been " + (group.isDebug() ? "enabled" : "disabled") + "!");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> prefix [newprefix] [world]",
+	@Command(name = "pex",
+			syntax = "group <group> prefix [newprefix] [world]",
 			permission = "permissions.manage.groups.prefix.<group>",
 			description = "Get or set <group> prefix.")
 	public void groupPrefix(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -117,10 +126,11 @@ public class GroupCommands extends PermissionsCommand {
 			group.setPrefix(args.get("newprefix"), worldName);
 		}
 		
-		sender.sendMessage(group.getIdentifier() + "'s prefix = \"" + group.getPrefix(worldName) + "\"");
+		sender.sendMessage(group.getName() + "'s prefix = \"" + group.getPrefix(worldName) + "\"");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> suffix [newsuffix] [world]",
+	@Command(name = "pex",
+			syntax = "group <group> suffix [newsuffix] [world]",
 			permission = "permissions.manage.groups.suffix.<group>",
 			description = "Get or set <group> suffix")
 	public void groupSuffix(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -138,10 +148,11 @@ public class GroupCommands extends PermissionsCommand {
 			group.setSuffix(args.get("newsuffix"), worldName);
 		}
 		
-		sender.sendMessage(group.getIdentifier() + "'s suffix is = \"" + group.getSuffix(worldName) + "\"");
+		sender.sendMessage(group.getName() + "'s suffix is = \"" + group.getSuffix(worldName) + "\"");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> create [parents]",
+	@Command(name = "pex",
+			syntax = "group <group> create [parents]",
 			permission = "permissions.manage.groups.create.<group>",
 			description = "Create <group> and/or set [parents]")
 	public void groupCreate(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -169,13 +180,15 @@ public class GroupCommands extends PermissionsCommand {
 			group.setParents(groups, null);
 		}
 		
-		sender.sendMessage(ChatColor.WHITE + "Group " + group.getIdentifier() + " created!");
+		sender.sendMessage(ChatColor.WHITE + "Group " + group.getName() + " created!");
 		
 		group.save();
 	}
 	
-	@Command(name = "pex", syntax = "group <group> delete",
-			permission = "permissions.manage.groups.remove.<group>", description = "Remove <group>")
+	@Command(name = "pex",
+			syntax = "group <group> delete",
+			permission = "permissions.manage.groups.remove.<group>",
+			description = "Remove <group>")
 	public void groupDelete(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		String groupName = this.autoCompleteGroupName(args.get("group"));
 		
@@ -186,21 +199,23 @@ public class GroupCommands extends PermissionsCommand {
 			return;
 		}
 		
-		sender.sendMessage(ChatColor.WHITE + "Group " + group.getIdentifier() + " removed!");
+		sender.sendMessage(ChatColor.WHITE + "Group " + group.getName() + " removed!");
 		
 		group.remove();
-		plugin.getPermissionsManager().resetGroup(group.getIdentifier());
+		plugin.getPermissionsManager().resetGroup(group.getName());
 	}
 	
 	/** Group inheritance */
-	@Command(name = "pex", syntax = "group <group> parents [world]",
+	@Command(name = "pex",
+			syntax = "group <group> parents [world]",
 			permission = "permissions.manage.groups.inheritance.<group>",
 			description = "List parents for <group> (alias)")
 	public void groupListParentsAlias(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.groupListParents(plugin, sender, args);
 	}
 	
-	@Command(name = "pex", syntax = "group <group> parents list [world]",
+	@Command(name = "pex",
+			syntax = "group <group> parents list [world]",
 			permission = "permissions.manage.groups.inheritance.<group>",
 			description = "List parents for <group>")
 	public void groupListParents(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -214,13 +229,13 @@ public class GroupCommands extends PermissionsCommand {
 			return;
 		}
 		
-		List<String> parentNames = group.getParentIdentifiers(worldName);
+		List<String> parentNames = group.getParentNames(worldName);
 		if (parentNames.isEmpty()) {
-			sender.sendMessage(ChatColor.RED + "Group " + group.getIdentifier() + " doesn't have parents");
+			sender.sendMessage(ChatColor.RED + "Group " + group.getName() + " doesn't have parents");
 			return;
 		}
 		
-		sender.sendMessage("Group " + group.getIdentifier() + " parents:");
+		sender.sendMessage("Group " + group.getName() + " parents:");
 		
 		for (String parent : parentNames) {
 			sender.sendMessage("  " + parent);
@@ -228,7 +243,8 @@ public class GroupCommands extends PermissionsCommand {
 		
 	}
 	
-	@Command(name = "pex", syntax = "group <group> parents set <parents> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> parents set <parents> [world]",
 			permission = "permissions.manage.groups.inheritance.<group>",
 			description = "Set parent(s) for <group> (single or comma-separated list)")
 	public void groupSetParents(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -256,13 +272,14 @@ public class GroupCommands extends PermissionsCommand {
 			
 			group.setParents(groups, worldName);
 			
-			sender.sendMessage(ChatColor.WHITE + "Group " + group.getIdentifier() + " inheritance updated!");
+			sender.sendMessage(ChatColor.WHITE + "Group " + group.getName() + " inheritance updated!");
 			
 			group.save();
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> parents add <parents> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> parents add <parents> [world]",
 			permission = "permissions.manage.groups.inheritance.<group>",
 			description = "Set parent(s) for <group> (single or comma-separated list)")
 	public void groupAddParents(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -290,13 +307,14 @@ public class GroupCommands extends PermissionsCommand {
 			
 			group.setParents(groups, worldName);
 			
-			sender.sendMessage(ChatColor.WHITE + "Group " + group.getIdentifier() + " inheritance updated!");
+			sender.sendMessage(ChatColor.WHITE + "Group " + group.getName() + " inheritance updated!");
 			
 			group.save();
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> parents remove <parents> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> parents remove <parents> [world]",
 			permission = "permissions.manage.groups.inheritance.<group>",
 			description = "Set parent(s) for <group> (single or comma-separated list)")
 	public void groupRemoveParents(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -322,21 +340,23 @@ public class GroupCommands extends PermissionsCommand {
 			
 			group.setParents(groups, worldName);
 			
-			sender.sendMessage(ChatColor.WHITE + "Group \"" + group.getIdentifier() + "\" inheritance updated!");
+			sender.sendMessage(ChatColor.WHITE + "Group \"" + group.getName() + "\" inheritance updated!");
 			
 			group.save();
 		}
 	}
 	
 	/** Group permissions */
-	@Command(name = "pex", syntax = "group <group>",
+	@Command(name = "pex",
+			syntax = "group <group>",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "List all <group> permissions (alias)")
 	public void groupListAliasPermissions(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.groupListPermissions(plugin, sender, args);
 	}
 	
-	@Command(name = "pex", syntax = "group <group> list [world]",
+	@Command(name = "pex",
+			syntax = "group <group> list [world]",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "List all <group> permissions in [world]")
 	public void groupListPermissions(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -363,16 +383,17 @@ public class GroupCommands extends PermissionsCommand {
 			printEntityInheritance(sender, parents.get(world));
 		}
 		
-		sender.sendMessage("Group " + group.getIdentifier() + "'s permissions:");
+		sender.sendMessage("Group " + group.getName() + "'s permissions:");
 		this.sendMessage(sender, this.mapPermissions(worldName, group, 0));
 		
-		sender.sendMessage("Group " + group.getIdentifier() + "'s Options: ");
+		sender.sendMessage("Group " + group.getName() + "'s Options: ");
 		for (Map.Entry<String, String> option : group.getOptions(worldName).entrySet()) {
 			sender.sendMessage("  " + option.getKey() + " = \"" + option.getValue() + "\"");
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> add <permission> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> add <permission> [world]",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "Add <permission> to <group> in [world]")
 	public void groupAddPermission(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -388,12 +409,13 @@ public class GroupCommands extends PermissionsCommand {
 		
 		group.addPermission(args.get("permission"), worldName);
 		
-		sender.sendMessage(ChatColor.WHITE + "Permission \"" + args.get("permission") + "\" added to group \"" + group.getIdentifier() + "\"!");
+		sender.sendMessage(ChatColor.WHITE + "Permission \"" + args.get("permission") + "\" added to group \"" + group.getName() + "\"!");
 		
 		this.informGroup(plugin, group, "Your permissions have been changed");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> set <option> <value> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> set <option> <value> [world]",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "Set <option> <value> for <group> in [world]")
 	public void groupSetOption(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -419,7 +441,8 @@ public class GroupCommands extends PermissionsCommand {
 		this.informGroup(plugin, group, "Your permissions has been changed");
 	}
 	
-	@Command(name = "pex", syntax = "group <group> remove <permission> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> remove <permission> [world]",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "Remove <permission> from <group> in [world]")
 	public void groupRemovePermission(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -438,13 +461,12 @@ public class GroupCommands extends PermissionsCommand {
 		group.removePermission(permission, worldName);
 		group.removeTimedPermission(permission, worldName);
 		
-		sender.sendMessage(ChatColor.WHITE + "Permission \"" + permission + "\" removed from group \"" + group.getIdentifier() + "\"!");
+		sender.sendMessage(ChatColor.WHITE + "Permission \"" + permission + "\" removed from group \"" + group.getName() + "\"!");
 		
 		this.informGroup(plugin, group, "Your permissions have been changed");
 	}
 	
-	@Command(
-			name = "pex",
+	@Command(name = "pex",
 			syntax = "group <group> swap <permission> <targetPermission> [world]",
 			permission = "permissions.manage.groups.permissions.<group>",
 			description = "Swap <permission> and <targetPermission> in permission list. Could be number or permission itself")
@@ -479,7 +501,8 @@ public class GroupCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> timed add <permission> [lifetime] [world]",
+	@Command(name = "pex",
+			syntax = "group <group> timed add <permission> [lifetime] [world]",
 			permission = "permissions.manage.groups.permissions.timed.<group>",
 			description = "Add timed <permission> to <group> with [lifetime] in [world]")
 	public void groupAddTimedPermission(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -507,7 +530,8 @@ public class GroupCommands extends PermissionsCommand {
 		plugin.getLogger().info("Group " + groupName + " get timed permission \"" + args.get("permission") + "\" " + (lifetime > 0 ? "for " + lifetime + " seconds " : " ") + "from " + sender.getName());
 	}
 	
-	@Command(name = "pex", syntax = "group <group> timed remove <permission> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> timed remove <permission> [world]",
 			permission = "permissions.manage.groups.permissions.timed.<group>",
 			description = "Remove timed <permissions> for <group> in [world]")
 	public void groupRemoveTimedPermission(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -528,7 +552,8 @@ public class GroupCommands extends PermissionsCommand {
 	}
 	
 	/** Group users management */
-	@Command(name = "pex", syntax = "group <group> users",
+	@Command(name = "pex",
+			syntax = "group <group> users",
 			permission = "permissions.manage.membership.<group>",
 			description = "List all users in <group>")
 	public void groupUsersList(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -544,11 +569,12 @@ public class GroupCommands extends PermissionsCommand {
 		sender.sendMessage("Group " + groupName + " users:");
 		
 		for (PermissionUser user : users) {
-			sender.sendMessage("   " + describeUser(user));
+			sender.sendMessage("   " + user.getName());
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> user add <user> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> user add <user> [world]",
 			permission = "permissions.manage.membership.<group>",
 			description = "Add <user> (single or comma-separated list) to <group>")
 	public void groupUsersAdd(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -580,7 +606,8 @@ public class GroupCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "group <group> user remove <user> [world]",
+	@Command(name = "pex",
+			syntax = "group <group> user remove <user> [world]",
 			permission = "permissions.manage.membership.<group>",
 			description = "Add <user> (single or comma-separated list) to <group>")
 	public void groupUsersRemove(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -613,7 +640,8 @@ public class GroupCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "default group [world]",
+	@Command(name = "pex",
+			syntax = "default group [world]",
 			permission = "permissions.manage.groups.inheritance",
 			description = "Print default group for specified world")
 	public void groupDefaultCheck(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
@@ -622,11 +650,12 @@ public class GroupCommands extends PermissionsCommand {
 		List<PermissionGroup> defaultGroups = plugin.getPermissionsManager().getDefaultGroups(worldName);
 		sender.sendMessage("Default groups in world " + worldName + " are:");
 		for (PermissionGroup grp : defaultGroups) {
-			sender.sendMessage("  - " + grp.getIdentifier());
+			sender.sendMessage("  - " + grp.getName());
 		}
 	}
 	
-	@Command(name = "pex", syntax = "set default group <group> <value> [world]",
+	@Command(name = "pex",
+			syntax = "set default group <group> <value> [world]",
 			permission = "permissions.manage.groups.inheritance",
 			description = "Set default group for specified world")
 	public void groupDefaultSet(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {

@@ -168,11 +168,6 @@ public class FileBackend extends PermissionBackend {
 		return Collections.unmodifiableSet(names);
 	}
 	
-	@Override
-	public Collection<String> getUserIdentifiers() {
-		ConfigurationSection users = this.permissions.getConfigurationSection("users");
-		return users != null ? users.getKeys(false) : Collections.<String> emptyList();
-	}
 	
 	@Override
 	public Collection<String> getUserNames() {

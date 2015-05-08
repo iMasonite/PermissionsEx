@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 public class MemoryData implements PermissionsGroupData, PermissionsUserData {
 	private String name;
 	private final HashMap<String, String> worldPrefix = new HashMap<>();
+	@SuppressWarnings("unused")
 	private final HashMap<String, String> worldSuffix = new HashMap<>();
 	private final HashMap<String, List<String>> worldsPermissions = new HashMap<>();
 	private final Map<String, Map<String, String>> worldsOptions = new HashMap<>();
@@ -50,7 +51,7 @@ public class MemoryData implements PermissionsGroupData, PermissionsUserData {
 	}
 	
 	@Override
-	public String getIdentifier() {
+	public String getName() {
 		return name;
 	}
 	
@@ -124,8 +125,8 @@ public class MemoryData implements PermissionsGroupData, PermissionsUserData {
 	}
 	
 	@Override
-	public boolean setIdentifier(String identifier) {
-		this.name = identifier;
+	public boolean setName(String name) {
+		this.name = name;
 		return true;
 	}
 }

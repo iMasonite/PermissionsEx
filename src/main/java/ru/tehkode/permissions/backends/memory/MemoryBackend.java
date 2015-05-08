@@ -56,12 +56,7 @@ public class MemoryBackend extends PermissionBackend {
 	public boolean hasGroup(String group) {
 		return false;
 	}
-	
-	@Override
-	public Collection<String> getUserIdentifiers() {
-		return Collections.emptySet();
-	}
-	
+		
 	@Override
 	public Collection<String> getUserNames() {
 		return Collections.emptySet();

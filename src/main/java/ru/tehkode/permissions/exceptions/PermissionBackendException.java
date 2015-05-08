@@ -2,6 +2,7 @@
 package ru.tehkode.permissions.exceptions;
 
 /** This exception is thrown when a permissions backend has issues loading */
+@SuppressWarnings("serial")
 public class PermissionBackendException extends Exception {
 	public PermissionBackendException() {}
 	

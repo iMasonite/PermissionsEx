@@ -50,6 +50,7 @@ import ru.tehkode.utils.StringUtils;
 
 /** @author code */
 public class PermissionsEx extends JavaPlugin {
+	@SuppressWarnings("unused")
 	private static final int BUKKITDEV_ID = 31279;
 	protected PermissionManager permissionsManager;
 	protected CommandsManager commandsManager;

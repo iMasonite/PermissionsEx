@@ -25,8 +25,10 @@ import ru.tehkode.permissions.exceptions.RankingException;
 
 public class PromotionCommands extends PermissionsCommand {
 	
-	@Command(name = "pex", syntax = "group <group> rank [rank] [ladder]",
-			description = "Get or set <group> [rank] [ladder]", isPrimary = true,
+	@Command(name = "pex",
+			syntax = "group <group> rank [rank] [ladder]",
+			description = "Get or set <group> [rank] [ladder]",
+			isPrimary = true,
 			permission = "permissions.groups.rank.<group>")
 	public void rankGroup(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		String groupName = this.autoCompleteGroupName(args.get("group"));
@@ -56,15 +58,17 @@ public class PromotionCommands extends PermissionsCommand {
 		int rank = group.getRank();
 		
 		if (rank > 0) {
-			sender.sendMessage("Group " + group.getIdentifier() + " rank is " + rank + " (ladder = " + group.getRankLadder() + ")");
+			sender.sendMessage("Group " + group.getName() + " rank is " + rank + " (ladder = " + group.getRankLadder() + ")");
 		}
 		else {
-			sender.sendMessage("Group " + group.getIdentifier() + " is unranked");
+			sender.sendMessage("Group " + group.getName() + " is unranked");
 		}
 	}
 	
-	@Command(name = "pex", syntax = "promote <user> [ladder]",
-			description = "Promotes <user> to next group on [ladder]", isPrimary = true)
+	@Command(name = "pex",
+			syntax = "promote <user> [ladder]",
+			description = "Promotes <user> to next group on [ladder]",
+			isPrimary = true)
 	public void promoteUser(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		String userName = this.autoCompletePlayerName(args.get("user"));
 		PermissionUser user = plugin.getPermissionsManager().getUser(userName);
@@ -95,18 +99,20 @@ public class PromotionCommands extends PermissionsCommand {
 		try {
 			PermissionGroup targetGroup = user.promote(promoter, ladder);
 			
-			this.informPlayer(plugin, user, "You have been promoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getIdentifier() + " group");
-			sender.sendMessage("User " + describeUser(user) + " promoted to " + targetGroup.getIdentifier() + " group");
-			plugin.getLogger().info("User " + describeUser(user) + " has been promoted to " + targetGroup.getIdentifier() + " group on " + targetGroup.getRankLadder() + " ladder by " + promoterName);
+			this.informPlayer(plugin, user, "You have been promoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getName() + " group");
+			sender.sendMessage("User " + user.getName() + " promoted to " + targetGroup.getName() + " group");
+			plugin.getLogger().info("User " + user.getName() + " has been promoted to " + targetGroup.getName() + " group on " + targetGroup.getRankLadder() + " ladder by " + promoterName);
 		}
 		catch (RankingException e) {
 			sender.sendMessage(ChatColor.RED + "Promotion error: " + e.getMessage());
-			plugin.getLogger().severe("Ranking Error (" + promoterName + " > " + e.getTarget().getIdentifier() + "): " + e.getMessage());
+			plugin.getLogger().severe("Ranking Error (" + promoterName + " > " + e.getTarget().getName() + "): " + e.getMessage());
 		}
 	}
 	
-	@Command(name = "pex", syntax = "demote <user> [ladder]",
-			description = "Demotes <user> to previous group or [ladder]", isPrimary = true)
+	@Command(name = "pex",
+			syntax = "demote <user> [ladder]",
+			description = "Demotes <user> to previous group or [ladder]",
+			isPrimary = true)
 	public void demoteUser(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		String userName = this.autoCompletePlayerName(args.get("user"));
 		PermissionUser user = plugin.getPermissionsManager().getUser(userName);
@@ -138,24 +144,30 @@ public class PromotionCommands extends PermissionsCommand {
 		try {
 			PermissionGroup targetGroup = user.demote(demoter, args.get("ladder"));
 			
-			this.informPlayer(plugin, user, "You have been demoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getIdentifier() + " group");
-			sender.sendMessage("User " + describeUser(user) + " demoted to " + targetGroup.getIdentifier() + " group");
-			plugin.getLogger().info("User " + describeUser(user) + " has been demoted to " + targetGroup.getIdentifier() + " group on " + targetGroup.getRankLadder() + " ladder by " + demoterName);
+			this.informPlayer(plugin, user, "You have been demoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getName() + " group");
+			sender.sendMessage("User " + user.getName() + " demoted to " + targetGroup.getName() + " group");
+			plugin.getLogger().info("User " + user.getName() + " has been demoted to " + targetGroup.getName() + " group on " + targetGroup.getRankLadder() + " ladder by " + demoterName);
 		}
 		catch (RankingException e) {
 			sender.sendMessage(ChatColor.RED + "Demotion error: " + e.getMessage());
-			plugin.getLogger().severe("Ranking Error (" + demoterName + " demotes " + e.getTarget().getIdentifier() + "): " + e.getMessage());
+			plugin.getLogger().severe("Ranking Error (" + demoterName + " demotes " + e.getTarget().getName() + "): " + e.getMessage());
 		}
 	}
 	
-	@Command(name = "promote", syntax = "<user>", description = "Promotes <user> to next group",
-			isPrimary = true, permission = "permissions.user.rank.promote")
+	@Command(name = "promote",
+			syntax = "<user>",
+			description = "Promotes <user> to next group",
+			isPrimary = true,
+			permission = "permissions.user.rank.promote")
 	public void promoteUserAlias(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.promoteUser(plugin, sender, args);
 	}
 	
-	@Command(name = "demote", syntax = "<user>", description = "Demotes <user> to previous group",
-			isPrimary = true, permission = "permissions.user.rank.demote")
+	@Command(name = "demote",
+			syntax = "<user>",
+			description = "Demotes <user> to previous group",
+			isPrimary = true,
+			permission = "permissions.user.rank.demote")
 	public void demoteUserAlias(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		this.demoteUser(plugin, sender, args);
 	}

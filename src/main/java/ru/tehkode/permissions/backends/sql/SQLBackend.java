@@ -106,12 +106,12 @@ public class SQLBackend extends PermissionBackend {
 		return new SQLConnection(ds.getConnection(), this);
 	}
 	
-	public String getTableName(String identifier) {
+	public String getTableName(String name) {
 		Map<String, Object> tableNames = this.tableNames;
-		if (tableNames == null) return identifier;
+		if (tableNames == null) return name;
 		
-		Object ret = tableNames.get(identifier);
-		if (ret == null) return identifier;
+		Object ret = tableNames.get(name);
+		if (ret == null) return name;
 		return ret.toString();
 	}
 	
@@ -179,17 +179,7 @@ public class SQLBackend extends PermissionBackend {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	@Override
-	public Collection<String> getUserIdentifiers() {
-		try (SQLConnection conn = getSQL()) {
-			return SQLData.getEntitiesNames(conn, SQLData.Type.USER, false);
-		}
-		catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+		
 	@Override
 	public Collection<String> getUserNames() {
 		Set<String> ret = new HashSet<>();

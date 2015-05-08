@@ -27,7 +27,6 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -127,10 +126,10 @@ public class PermissionManager {
 			if (reloadEntity) {
 				switch (event.getType()) {
 					case USER:
-						users.remove(event.getEntityIdentifier());
+						users.remove(event.getEntityName());
 						break;
 					case GROUP:
-						PermissionGroup group = groups.remove(event.getEntityIdentifier());
+						PermissionGroup group = groups.remove(event.getEntityName());
 						if (group != null) {
 							for (Iterator<PermissionUser> it = users.values().iterator(); it.hasNext();) {
 								if (it.next().inGroup(group, true)) {
@@ -147,6 +146,7 @@ public class PermissionManager {
 			}
 		}
 		
+		@SuppressWarnings("incomplete-switch")
 		@EventHandler(priority = EventPriority.LOWEST)
 		public void onSystemEvent(PermissionSystemEvent event) {
 			if (isLocal(event)) return;
@@ -176,7 +176,7 @@ public class PermissionManager {
 	 * @param permission permission string to check against
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission) {
-		return this.has(player.getUniqueId(), permission, player.getWorld().getName());
+		return this.has(player.getName(), permission, player.getWorld().getName());
 	}
 	
 	/** Check if player has specified permission in world
@@ -186,7 +186,7 @@ public class PermissionManager {
 	 * @param world world's name as string
 	 * @return true on success false otherwise */
 	public boolean has(Player player, String permission, String world) {
-		return this.has(player.getUniqueId(), permission, world);
+		return this.has(player.getName(), permission, world);
 	}
 	
 	/** Check if player with name has permission in world
@@ -203,118 +203,51 @@ public class PermissionManager {
 		return user.has(permission, world);
 	}
 	
-	/** Check if player with UUID has permission in world
-	 * 
-	 * @param playerId player name
-	 * @param permission permission as string to check against
-	 * @param world world's name as string
-	 * @return true on success false otherwise */
-	public boolean has(UUID playerId, String permission, String world) {
-		PermissionUser user = this.getUser(playerId);
-		
-		return user != null && user.has(permission, world);
-		
-	}
-	
 	/** Return user's object
 	 * 
 	 * @param username get PermissionUser with given name
 	 * @return PermissionUser instance */
 	public PermissionUser getUser(String username) {
-		if (username == null || username.isEmpty()) throw new IllegalArgumentException("Null or empty name passed! Name must not be empty");
-		
-		try {
-			if (username.length() != 36) throw new IllegalArgumentException("not a uuid, try stuff");
-			return getUser(UUID.fromString(username)); // Username is uuid as string, just use it
+		if (username == null || username.isEmpty()) {
+			throw new IllegalArgumentException("Null or empty name passed! Name must not be empty");
 		}
-		catch (IllegalArgumentException ex) {
-			OfflinePlayer player = plugin.getServer().getOfflinePlayer(username);
-			UUID userUUID = null;
-			try {
-				userUUID = player instanceof Player ? ((Player) player).getUniqueId() : player.getUniqueId();
-			}
-			catch (Throwable t) {
-				// Handle cases where the plugin is not running on a uuid-aware Bukkit by just not
-				// converting here
-			}
-			
-			if (userUUID != null && (player.isOnline() || backend.hasUser(userUUID.toString()))) return getUser(userUUID.toString(), username, player.isOnline());
-			else // The user is offline and unconverted, so we'll just have to return an unconverted user.
-			return getUser(username, null, player.isOnline());
-		}
-	}
-	
-	/** Return object of specified player
-	 * 
-	 * @param player player object
-	 * @return PermissionUser instance */
-	public PermissionUser getUser(Player player) {
-		return this.getUser(player.getUniqueId().toString(), player.getName(), true);
-	}
-	
-	public PermissionUser getUser(UUID uid) {
-		final String identifier = uid.toString();
-		if (users.containsKey(identifier.toLowerCase())) return getUser(identifier, null, false);
-		OfflinePlayer ply = null;
-		try {
-			ply = plugin.getServer().getPlayer(uid); // to make things cheaper, we're just checking online
-																								// players (can be improved later on)
-			// Also, only online players are really necessary to convert to proper names
-		}
-		catch (NoSuchMethodError e) {
-			// Old craftbukkit, guess we won't have a fallback name. Much shame.
-		}
-		String fallbackName = null;
-		if (ply != null) {
-			fallbackName = ply.getName();
-		}
-		return getUser(identifier, fallbackName, ply != null);
-	}
-	
-	private PermissionUser getUser(String identifier, String fallbackName, boolean store) {
-		PermissionUser user = users.get(identifier.toLowerCase());
-		
-		if (user != null) return user;
-		
-		PermissionsUserData data = backend.getUserData(identifier);
-		if (data != null) {
-			if (fallbackName != null) {
-				if (data.isVirtual() && backend.hasUser(fallbackName)) {
-					if (isDebug()) {
-						getLogger().info("Converting user " + fallbackName + " (UUID " + identifier + ") to UUID-based storage");
-					}
-					
-					PermissionsUserData oldData = backend.getUserData(fallbackName);
-					if (oldData.setIdentifier(identifier)) {
-						data = oldData;
-						data.setOption("name", fallbackName, null);
-						resetUser(fallbackName); // In case somebody requested the old user but conversion was
-																			// previously unsuccessful
-					}
-					else throw new IllegalStateException("User already exists with new id " + identifier + " (converting from " + fallbackName + ")");
-				}
-			}
-			user = new PermissionUser(identifier, data, this);
-			user.initialize();
-			if (store) {
-				this.users.put(identifier.toLowerCase(), user);
+
+		PermissionUser user = users.get(username.toLowerCase());
+
+		if (user == null) {
+			PermissionsUserData data = backend.getUserData(username);
+			if (data != null) {
+				user = new PermissionUser(username, data, this);
+				user.initialize();
+				this.users.put(username.toLowerCase(), user);
+			} else {
+				throw new IllegalStateException("User " + username + " is null");
 			}
 		}
-		else throw new IllegalStateException("User " + identifier + " is null");
-		
+
 		return user;
+	}
+	
+	/**
+	 * Return object of specified player
+	 *
+	 * @param player player object
+	 * @return PermissionUser instance
+	 */
+	public PermissionUser getUser(Player player) {
+		return this.getUser(player.getName());
 	}
 	
 	/** Return all registered user objects
 	 * 
 	 * @return unmodifiable list of users */
 	public Set<PermissionUser> getUsers() {
-		Set<PermissionUser> users = new HashSet<>();
+		Set<PermissionUser> users = new HashSet<PermissionUser>();
 		for (Player p : Bukkit.getServer().getOnlinePlayers()) {
 			users.add(getUser(p));
 		}
-		for (String name : backend.getUserIdentifiers()) {
-			users.add(getUser(name, null, false));
+		for (String name : backend.getUserNames()) {
+			users.add(getUser(name));
 		}
 		return Collections.unmodifiableSet(users);
 	}
@@ -325,11 +258,7 @@ public class PermissionManager {
 	public Set<PermissionUser> getActiveUsers() {
 		return new HashSet<>(users.values());
 	}
-	
-	public Collection<String> getUserIdentifiers() {
-		return backend.getUserIdentifiers();
-	}
-	
+		
 	public Collection<String> getUserNames() {
 		return backend.getUserNames();
 	}
@@ -414,19 +343,11 @@ public class PermissionManager {
 		}
 	}
 	
-	public void clearUserCache(UUID uid) {
-		PermissionUser user = this.getUser(uid);
-		
-		if (user != null) {
-			user.clearCache();
-		}
-	}
-	
 	/** Clear cache for specified player
 	 * 
 	 * @param player */
 	public void clearUserCache(Player player) {
-		this.clearUserCache(player.getUniqueId());
+		this.clearUserCache(player.getName());
 	}
 	
 	/** Return object for specified group

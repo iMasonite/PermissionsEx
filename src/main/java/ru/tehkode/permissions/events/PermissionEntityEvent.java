@@ -19,18 +19,19 @@ import ru.tehkode.permissions.PermissionEntity;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /** @author t3hk0d3 */
+@SuppressWarnings("serial")
 public class PermissionEntityEvent extends PermissionEvent {
 	
 	private static final HandlerList handlers = new HandlerList();
 	protected transient PermissionEntity entity;
 	protected Action action;
 	protected PermissionEntity.Type type;
-	protected String entityIdentifier;
+	protected String entityName;
 	
 	public PermissionEntityEvent(UUID sourceUUID, PermissionEntity entity, Action action) {
 		super(sourceUUID);
 		this.entity = entity;
-		this.entityIdentifier = entity.getIdentifier();
+		this.entityName = entity.getName();
 		this.type = entity.getType();
 		this.action = action;
 	}
@@ -43,18 +44,18 @@ public class PermissionEntityEvent extends PermissionEvent {
 		if (entity == null) {
 			switch (type) {
 				case GROUP:
-					entity = PermissionsEx.getPermissionManager().getGroup(entityIdentifier);
+					entity = PermissionsEx.getPermissionManager().getGroup(entityName);
 					break;
 				case USER:
-					entity = PermissionsEx.getPermissionManager().getUser(entityIdentifier);
+					entity = PermissionsEx.getPermissionManager().getUser(entityName);
 					break;
 			}
 		}
 		return entity;
 	}
 	
-	public String getEntityIdentifier() {
-		return entityIdentifier;
+	public String getEntityName() {
+		return entityName;
 	}
 	
 	public PermissionEntity.Type getType() {

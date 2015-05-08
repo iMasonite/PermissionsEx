@@ -17,7 +17,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /** @author zml2008 */
-public class PermissionList extends HashMap<String, Permission> {
+@SuppressWarnings({"serial","rawtypes","unchecked"})public class PermissionList extends HashMap<String, Permission> {
 	private static FieldReplacer<PluginManager, Map> INJECTOR;
 	
 	private static final Map<Class<?>, FieldReplacer<Permission, Map>> CHILDREN_MAPS = new HashMap<>();
@@ -90,7 +90,7 @@ public class PermissionList extends HashMap<String, Permission> {
 			INJECTOR = new FieldReplacer<>(manager.getClass(), "permissions", Map.class);
 		}
 		Map existing = INJECTOR.get(manager);
-		@SuppressWarnings("unchecked") PermissionList list = new PermissionList(existing);
+		PermissionList list = new PermissionList(existing);
 		INJECTOR.set(manager, list);
 		return list;
 	}

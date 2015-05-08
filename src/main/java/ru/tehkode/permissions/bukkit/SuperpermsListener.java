@@ -4,7 +4,6 @@ package ru.tehkode.permissions.bukkit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,7 +25,7 @@ import ru.tehkode.permissions.events.PermissionSystemEvent;
 /** PEX permissions database integration with superperms */
 public class SuperpermsListener implements Listener {
 	private final PermissionsEx plugin;
-	private final Map<UUID, PermissionAttachment> attachments = new HashMap<>();
+	private final Map<String, PermissionAttachment> attachments = new HashMap<String, PermissionAttachment>();
 	
 	public SuperpermsListener(PermissionsEx plugin) {
 		this.plugin = plugin;
@@ -40,12 +39,12 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	protected void updateAttachment(Player player, String worldName) {
-		PermissionAttachment attach = attachments.get(player.getUniqueId());
+		PermissionAttachment attach = attachments.get(player.getName());
 		Permission playerPerm = getCreateWrapper(player, "");
 		Permission playerOptionPerm = getCreateWrapper(player, ".options");
 		if (attach == null) {
 			attach = player.addAttachment(plugin);
-			attachments.put(player.getUniqueId(), attach);
+			attachments.put(player.getName(), attach);
 			attach.setPermission(playerPerm, true);
 		}
 		
@@ -58,7 +57,7 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	private String permissionName(Player player, String suffix) {
-		return "permissionsex.player." + player.getUniqueId().toString() + suffix;
+		return "permissionsex.player." + player.getName().toString() + suffix;
 	}
 	
 	private void removePEXPerm(Player player, String suffix) {
@@ -94,7 +93,7 @@ public class SuperpermsListener implements Listener {
 	
 	private void updatePlayerMetadata(Permission rootPermission, PermissionUser user, String worldName) {
 		rootPermission.getChildren().clear();
-		final List<String> groups = user.getParentIdentifiers(worldName);
+		final List<String> groups = user.getParentNames(worldName);
 		final Map<String, String> options = user.getOptions(worldName);
 		// Metadata
 		// Groups
@@ -115,7 +114,7 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	protected void removeAttachment(Player player) {
-		PermissionAttachment attach = attachments.remove(player.getUniqueId());
+		PermissionAttachment attach = attachments.remove(player.getName());
 		if (attach != null) {
 			attach.remove();
 		}
@@ -179,26 +178,26 @@ public class SuperpermsListener implements Listener {
 	}
 	
 	private void updateSelective(PermissionEntityEvent event, PermissionUser user) {
-		final Player p = user.getPlayer();
-		if (p != null) {
+		final Player player = user.getPlayer();
+		if (player != null) {
 			switch (event.getAction()) {
 				case SAVED:
 					break;
 				
 				case PERMISSIONS_CHANGED:
 				case TIMEDPERMISSION_EXPIRED:
-					updatePlayerPermission(getCreateWrapper(p, ""), p, user, p.getWorld().getName());
-					p.recalculatePermissions();
+					updatePlayerPermission(getCreateWrapper(player, ""), player, user, player.getWorld().getName());
+					player.recalculatePermissions();
 					break;
 				
 				case OPTIONS_CHANGED:
 				case INFO_CHANGED:
-					updatePlayerMetadata(getCreateWrapper(p, ".options"), user, p.getWorld().getName());
-					p.recalculatePermissions();
+					updatePlayerMetadata(getCreateWrapper(player, ".options"), user, player.getWorld().getName());
+					player.recalculatePermissions();
 					break;
 				
 				default:
-					updateAttachment(p);
+					updateAttachment(player);
 			}
 		}
 	}
@@ -209,8 +208,7 @@ public class SuperpermsListener implements Listener {
 			if (event.getEntity() instanceof PermissionUser) { // update user only
 				updateSelective(event, (PermissionUser) event.getEntity());
 			}
-			else if (event.getEntity() instanceof PermissionGroup) { // update all members of group, might
-																																// be resource hog
+			else if (event.getEntity() instanceof PermissionGroup) {
 				for (PermissionUser user : ((PermissionGroup) event.getEntity()).getActiveUsers(true)) {
 					updateSelective(event, user);
 				}

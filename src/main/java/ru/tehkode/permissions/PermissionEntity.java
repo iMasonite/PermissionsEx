@@ -28,7 +28,7 @@ import org.bukkit.permissions.Permission;
 import ru.tehkode.permissions.events.PermissionEntityEvent;
 
 /** @author code */
-public abstract class PermissionEntity {
+@SuppressWarnings("javadoc")public abstract class PermissionEntity {
 	protected final static String NON_INHERITABLE_PREFIX = "#";
 	
 	public static enum Type {
@@ -62,13 +62,10 @@ public abstract class PermissionEntity {
 	 * server
 	 * 
 	 * @return name */
-	public String getIdentifier() {
+	public String getName() {
 		return this.name;
 	}
 	
-	public String getName() {
-		return getOwnOption("name", null, getIdentifier());
-	}
 	
 	/*
 	 * protected void setName(String name) { setOption("name", name); }
@@ -175,7 +172,7 @@ public abstract class PermissionEntity {
 		String expression = getMatchingExpression(permission, world);
 		
 		if (this.isDebug()) {
-			Logger.getLogger("Minecraft").info("User " + this.getIdentifier() + " checked for \"" + permission + "\", " + (expression == null ? "no permission found" : "\"" + expression + "\" found"));
+			Logger.getLogger("Minecraft").info("User " + this.getName() + " checked for \"" + permission + "\", " + (expression == null ? "no permission found" : "\"" + expression + "\" found"));
 		}
 		
 		return explainExpression(expression);
@@ -638,7 +635,7 @@ public abstract class PermissionEntity {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "(ident=" + this.getIdentifier() + ",name=" + getName() + ")";
+		return this.getClass().getSimpleName() + "(name=" + this.getName() + ")";
 	}
 	
 	public String getMatchingExpression(String permission, String world) {
@@ -682,7 +679,7 @@ public abstract class PermissionEntity {
 	// -- Inheritance -- //
 	public List<PermissionGroup> getOwnParents(String world) {
 		List<PermissionGroup> ret = new ArrayList<>();
-		for (String group : getOwnParentIdentifiers(world)) {
+		for (String group : getOwnParentNames(world)) {
 			ret.add(manager.getGroup(group));
 		}
 		Collections.sort(ret);
@@ -693,14 +690,10 @@ public abstract class PermissionEntity {
 		return getOwnParents(null);
 	}
 	
-	public List<String> getOwnParentIdentifiers(String world) {
+	public List<String> getOwnParentNames(String world) {
 		return Collections.unmodifiableList(getData().getParents(world));
 	}
-	
-	public List<String> getOwnParentIdentifiers() {
-		return getOwnParentIdentifiers(null);
-	}
-	
+		
 	public final List<PermissionGroup> getParents(String world) {
 		return Collections.unmodifiableList(getParentsInternal(world));
 	}
@@ -715,8 +708,8 @@ public abstract class PermissionEntity {
 																												// things happen :)
 			@Override
 			protected Void fetchLocal(PermissionEntity entity, String world) {
-				for (String groupName : entity.getOwnParentIdentifiers(world)) {
-					if (groupName == null || groupName.trim().isEmpty() || (PermissionEntity.this instanceof PermissionGroup && groupName.equalsIgnoreCase(getIdentifier()))) {
+				for (String groupName : entity.getOwnParentNames(world)) {
+					if (groupName == null || groupName.trim().isEmpty() || (PermissionEntity.this instanceof PermissionGroup && groupName.equalsIgnoreCase(getName()))) {
 						continue;
 					}
 					
@@ -732,10 +725,10 @@ public abstract class PermissionEntity {
 		return ret;
 	}
 	
-	public List<String> getParentIdentifiers(String world) {
+	public List<String> getParentNames(String world) {
 		List<String> ret = new LinkedList<>();
 		for (PermissionGroup group : getParentsInternal(world)) {
-			ret.add(group.getIdentifier());
+			ret.add(group.getName());
 		}
 		
 		return Collections.unmodifiableList(ret);
@@ -744,8 +737,8 @@ public abstract class PermissionEntity {
 	/** Return names of parent groups in global scope
 	 * 
 	 * @return Names of parent groups in unmodifiable list */
-	public List<String> getParentIdentifiers() {
-		return getParentIdentifiers(null);
+	public List<String> getParentNames() {
+		return getParentNames(null);
 	}
 	
 	public Map<String, List<PermissionGroup>> getAllParents() {
@@ -762,7 +755,7 @@ public abstract class PermissionEntity {
 	protected List<PermissionGroup> getWorldParents(String worldName) {
 		List<PermissionGroup> groups = new LinkedList<>();
 		for (String groupName : getData().getParents(worldName)) {
-			if (groupName == null || groupName.trim().isEmpty() || (this instanceof PermissionGroup && groupName.equalsIgnoreCase(this.getIdentifier()))) {
+			if (groupName == null || groupName.trim().isEmpty() || (this instanceof PermissionGroup && groupName.equalsIgnoreCase(this.getName()))) {
 				continue;
 			}
 			
@@ -779,9 +772,9 @@ public abstract class PermissionEntity {
 	public void setParents(List<PermissionGroup> parents, String world) {
 		List<String> parentNames = new LinkedList<>();
 		for (PermissionGroup group : parents) {
-			parentNames.add(group.getIdentifier());
+			parentNames.add(group.getName());
 		}
-		setParentsIdentifier(parentNames, world);
+		setParentsName(parentNames, world);
 	}
 	
 	/** Set parents for entity in global namespace
@@ -791,13 +784,13 @@ public abstract class PermissionEntity {
 		setParents(parents, null);
 	}
 	
-	public void setParentsIdentifier(List<String> parentNames, String world) {
+	public void setParentsName(List<String> parentNames, String world) {
 		getData().setParents(parentNames, world);
 		clearCache();
 		this.callEvent(PermissionEntityEvent.Action.INHERITANCE_CHANGED);
 	}
 	
-	public void setParentsIdentifier(List<String> parentNames) {
-		setParentsIdentifier(parentNames, null);
+	public void setParentsName(List<String> parentNames) {
+		setParentsName(parentNames, null);
 	}
 }

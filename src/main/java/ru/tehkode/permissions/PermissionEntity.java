@@ -28,7 +28,8 @@ import org.bukkit.permissions.Permission;
 import ru.tehkode.permissions.events.PermissionEntityEvent;
 
 /** @author code */
-@SuppressWarnings("javadoc")public abstract class PermissionEntity {
+@SuppressWarnings("javadoc")
+public abstract class PermissionEntity {
 	protected final static String NON_INHERITABLE_PREFIX = "#";
 	
 	public static enum Type {
@@ -65,7 +66,6 @@ import ru.tehkode.permissions.events.PermissionEntityEvent;
 	public String getName() {
 		return this.name;
 	}
-	
 	
 	/*
 	 * protected void setName(String name) { setOption("name", name); }
@@ -693,7 +693,7 @@ import ru.tehkode.permissions.events.PermissionEntityEvent;
 	public List<String> getOwnParentNames(String world) {
 		return Collections.unmodifiableList(getData().getParents(world));
 	}
-		
+	
 	public final List<PermissionGroup> getParents(String world) {
 		return Collections.unmodifiableList(getParentsInternal(world));
 	}

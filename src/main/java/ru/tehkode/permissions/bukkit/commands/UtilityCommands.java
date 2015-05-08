@@ -31,7 +31,9 @@ import ru.tehkode.permissions.exceptions.PermissionBackendException;
 
 public class UtilityCommands extends PermissionsCommand {
 	
-	@Command(name = "pex", syntax = "reload", permission = "permissions.manage.reload",
+	@Command(name = "pex",
+			syntax = "reload",
+			permission = "permissions.manage.reload",
 			description = "Reload environment")
 	public void reload(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		try {
@@ -44,7 +46,9 @@ public class UtilityCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "report", permission = "permissions.manage.reportbug",
+	@Command(name = "pex",
+			syntax = "report",
+			permission = "permissions.manage.reportbug",
 			description = "Create an issue template to report an issue")
 	public void report(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		ErrorReport report = ErrorReport.withException("User-requested report", new Exception().fillInStackTrace());
@@ -52,8 +56,10 @@ public class UtilityCommands extends PermissionsCommand {
 		sender.sendMessage(ChatColor.RED + "NOTE: A GitHub account is necessary to report issues. Create one at https://github.com/");
 	}
 	
-	@Command(name = "pex", syntax = "config <node> [value]",
-			permission = "permissions.manage.config", description = "Print or set <node> [value]")
+	@Command(name = "pex",
+			syntax = "config <node> [value]",
+			permission = "permissions.manage.config",
+			description = "Print or set <node> [value]")
 	public void config(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		
 		String nodeName = args.get("node");
@@ -89,13 +95,17 @@ public class UtilityCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "backend", permission = "permissions.manage.backend",
+	@Command(name = "pex",
+			syntax = "backend",
+			permission = "permissions.manage.backend",
 			description = "Print currently used backend")
 	public void getBackend(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		sender.sendMessage("Current backend: " + plugin.getPermissionsManager().getBackend());
 	}
 	
-	@Command(name = "pex", syntax = "backend <backend>", permission = "permissions.manage.backend",
+	@Command(name = "pex",
+			syntax = "backend <backend>",
+			permission = "permissions.manage.backend",
 			description = "Change permission backend on the fly (Use with caution!)")
 	public void setBackend(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		if (args.get("backend") == null) return;
@@ -119,14 +129,18 @@ public class UtilityCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "hierarchy [world]", permission = "permissions.manage.users",
+	@Command(name = "pex",
+			syntax = "hierarchy [world]",
+			permission = "permissions.manage.users",
 			description = "Print complete user/group hierarchy")
 	public void printHierarchy(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		sender.sendMessage("User/Group inheritance hierarchy:");
 		this.sendMessage(sender, this.printHierarchy(null, this.autoCompleteWorldName(args.get("world")), 0));
 	}
-		
-	@Command(name = "pex", syntax = "import <backend>", permission = "permissions.dump",
+	
+	@Command(name = "pex",
+			syntax = "import <backend>",
+			permission = "permissions.dump",
 			description = "Import data from <backend> as specified in the configuration")
 	public void dumpData(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		try {
@@ -152,7 +166,9 @@ public class UtilityCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "toggle debug", permission = "permissions.debug",
+	@Command(name = "pex",
+			syntax = "toggle debug",
+			permission = "permissions.debug",
 			description = "Enable/disable debug mode")
 	public void toggleFeature(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		PermissionManager manager = plugin.getPermissionsManager();
@@ -177,7 +193,9 @@ public class UtilityCommands extends PermissionsCommand {
 		}
 	}
 	
-	@Command(name = "pex", syntax = "help [page] [count]", permission = "permissions.manage",
+	@Command(name = "pex",
+			syntax = "help [page] [count]",
+			permission = "permissions.manage",
 			description = "PermissionsEx commands help")
 	public void showHelp(PermissionsEx plugin, CommandSender sender, Map<String, String> args) {
 		List<CommandBinding> commands = this.manager.getCommands();

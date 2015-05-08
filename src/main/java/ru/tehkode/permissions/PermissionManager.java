@@ -208,32 +208,27 @@ public class PermissionManager {
 	 * @param username get PermissionUser with given name
 	 * @return PermissionUser instance */
 	public PermissionUser getUser(String username) {
-		if (username == null || username.isEmpty()) {
-			throw new IllegalArgumentException("Null or empty name passed! Name must not be empty");
-		}
-
+		if (username == null || username.isEmpty()) throw new IllegalArgumentException("Null or empty name passed! Name must not be empty");
+		
 		PermissionUser user = users.get(username.toLowerCase());
-
+		
 		if (user == null) {
 			PermissionsUserData data = backend.getUserData(username);
 			if (data != null) {
 				user = new PermissionUser(username, data, this);
 				user.initialize();
 				this.users.put(username.toLowerCase(), user);
-			} else {
-				throw new IllegalStateException("User " + username + " is null");
 			}
+			else throw new IllegalStateException("User " + username + " is null");
 		}
-
+		
 		return user;
 	}
 	
-	/**
-	 * Return object of specified player
-	 *
+	/** Return object of specified player
+	 * 
 	 * @param player player object
-	 * @return PermissionUser instance
-	 */
+	 * @return PermissionUser instance */
 	public PermissionUser getUser(Player player) {
 		return this.getUser(player.getName());
 	}
@@ -258,7 +253,7 @@ public class PermissionManager {
 	public Set<PermissionUser> getActiveUsers() {
 		return new HashSet<>(users.values());
 	}
-		
+	
 	public Collection<String> getUserNames() {
 		return backend.getUserNames();
 	}

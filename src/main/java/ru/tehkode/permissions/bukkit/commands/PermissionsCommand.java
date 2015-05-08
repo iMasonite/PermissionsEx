@@ -266,7 +266,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			builder.append("\n");
 		}
 		
-		//List<PermissionGroup> parents = entity.getParents(worldName);
+		// List<PermissionGroup> parents = entity.getParents(worldName);
 		level++; // Just increment level once
 		return builder.toString();
 	}

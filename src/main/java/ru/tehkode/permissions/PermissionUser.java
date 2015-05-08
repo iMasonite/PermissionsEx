@@ -25,7 +25,8 @@ import ru.tehkode.permissions.events.PermissionEntityEvent;
 import ru.tehkode.permissions.exceptions.RankingException;
 
 /** @author code */
-@SuppressWarnings("javadoc")public class PermissionUser extends PermissionEntity {
+@SuppressWarnings("javadoc")
+public class PermissionUser extends PermissionEntity {
 	
 	private final static String PERMISSION_NOT_FOUND = "<not found>"; // used replace null for
 																																		// ConcurrentHashMap

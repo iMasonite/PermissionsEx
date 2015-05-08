@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@SuppressWarnings({"javadoc"})public interface PermissionsData {
+@SuppressWarnings({ "javadoc" })
+public interface PermissionsData {
 	/** Preload data from entity */
 	public void load();
 	

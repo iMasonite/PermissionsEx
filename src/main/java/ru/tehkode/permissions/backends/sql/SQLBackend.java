@@ -179,7 +179,7 @@ public class SQLBackend extends PermissionBackend {
 			throw new RuntimeException(e);
 		}
 	}
-		
+	
 	@Override
 	public Collection<String> getUserNames() {
 		Set<String> ret = new HashSet<>();

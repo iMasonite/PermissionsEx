@@ -52,7 +52,6 @@ public abstract class PermissionBackend {
 	
 	public abstract boolean hasGroup(String group);
 	
-	
 	/** Return friendly names of known users. These cannot be passed to {@link #getUserData(String)} to
 	 * return a valid user object
 	 * 

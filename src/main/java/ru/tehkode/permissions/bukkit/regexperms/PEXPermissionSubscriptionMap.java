@@ -20,7 +20,7 @@ import com.google.common.collect.Sets;
 
 /** PermissibleMap for the permissions subscriptions data in Bukkit's {@link PluginManager} so we can
  * put in our own data too. */
-@SuppressWarnings({"serial","rawtypes","unchecked"})
+@SuppressWarnings({ "serial", "rawtypes", "unchecked" })
 public class PEXPermissionSubscriptionMap extends HashMap<String, Map<Permissible, Boolean>> {
 	private static FieldReplacer<PluginManager, Map> INJECTOR;
 	private static final AtomicReference<PEXPermissionSubscriptionMap> INSTANCE = new AtomicReference<>();

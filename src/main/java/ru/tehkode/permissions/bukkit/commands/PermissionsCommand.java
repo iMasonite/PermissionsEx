@@ -32,6 +32,7 @@ import ru.tehkode.permissions.commands.CommandsManager;
 import ru.tehkode.permissions.commands.exceptions.AutoCompleteChoicesException;
 import ru.tehkode.utils.StringUtils;
 
+@SuppressWarnings({ "unused" })
 public abstract class PermissionsCommand implements CommandListener {
 	protected CommandsManager manager;
 	
@@ -47,7 +48,10 @@ public abstract class PermissionsCommand implements CommandListener {
 	}
 	
 	protected void informPlayer(PermissionsEx plugin, PermissionUser user, String message) {
-		if (!plugin.getConfig().getBoolean("permissions.informplayers.changes", false)) return;
+		if (!plugin.getConfig().getBoolean("permissions.informplayers.changes", false)) return; // User
+																																														// informing
+																																														// is
+																																														// disabled
 		
 		Player player = user.getPlayer();
 		if (player == null) return;
@@ -66,7 +70,7 @@ public abstract class PermissionsCommand implements CommandListener {
 				rank = "rank " + group.getRank() + " @ " + group.getRankLadder();
 			}
 			
-			sender.sendMessage("   " + group.getName() + " (" + rank + ")");
+			sender.sendMessage("   " + group.getIdentifier() + " (" + rank + ")");
 		}
 	}
 	
@@ -103,7 +107,7 @@ public abstract class PermissionsCommand implements CommandListener {
 	}
 	
 	protected String describeUser(PermissionUser user) {
-		return user.getName() + "/" + user.getName();
+		return user.getIdentifier() + "/" + user.getName();
 	}
 	
 	protected String autoCompleteGroupName(String groupName) {
@@ -231,13 +235,13 @@ public abstract class PermissionsCommand implements CommandListener {
 				continue;
 			}
 			
-			buffer.append(StringUtils.repeat("  ", level)).append(" - ").append(group.getName()).append("\n");
+			buffer.append(StringUtils.repeat("  ", level)).append(" - ").append(group.getIdentifier()).append("\n");
 			
 			// Groups
 			buffer.append(printHierarchy(group, worldName, level + 1));
 			
 			for (PermissionUser user : group.getUsers(worldName)) {
-				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(user.getName()).append("\n");
+				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(user.getIdentifier()).append("\n");
 			}
 		}
 		
@@ -258,7 +262,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			
 			builder.append(permission);
 			if (level > 0) {
-				builder.append(" (from ").append(entity.getName()).append(")");
+				builder.append(" (from ").append(entity.getIdentifier()).append(")");
 			}
 			else {
 				builder.append(" (own)");
@@ -266,7 +270,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			builder.append("\n");
 		}
 		
-		// List<PermissionGroup> parents = entity.getParents(worldName);
+		List<PermissionGroup> parents = entity.getParents(worldName);
 		level++; // Just increment level once
 		return builder.toString();
 	}

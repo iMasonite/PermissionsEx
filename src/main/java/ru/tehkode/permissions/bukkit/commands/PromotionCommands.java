@@ -58,10 +58,10 @@ public class PromotionCommands extends PermissionsCommand {
 		int rank = group.getRank();
 		
 		if (rank > 0) {
-			sender.sendMessage("Group " + group.getIdentifier() + " rank is " + rank + " (ladder = " + group.getRankLadder() + ")");
+			sender.sendMessage("Group " + group.getName() + " rank is " + rank + " (ladder = " + group.getRankLadder() + ")");
 		}
 		else {
-			sender.sendMessage("Group " + group.getIdentifier() + " is unranked");
+			sender.sendMessage("Group " + group.getName() + " is unranked");
 		}
 	}
 	
@@ -99,13 +99,13 @@ public class PromotionCommands extends PermissionsCommand {
 		try {
 			PermissionGroup targetGroup = user.promote(promoter, ladder);
 			
-			this.informPlayer(plugin, user, "You have been promoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getIdentifier() + " group");
-			sender.sendMessage("User " + describeUser(user) + " promoted to " + targetGroup.getIdentifier() + " group");
-			plugin.getLogger().info("User " + describeUser(user) + " has been promoted to " + targetGroup.getIdentifier() + " group on " + targetGroup.getRankLadder() + " ladder by " + promoterName);
+			this.informPlayer(plugin, user, "You have been promoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getName() + " group");
+			sender.sendMessage("User " + user.getName() + " promoted to " + targetGroup.getName() + " group");
+			plugin.getLogger().info("User " + user.getName() + " has been promoted to " + targetGroup.getName() + " group on " + targetGroup.getRankLadder() + " ladder by " + promoterName);
 		}
 		catch (RankingException e) {
 			sender.sendMessage(ChatColor.RED + "Promotion error: " + e.getMessage());
-			plugin.getLogger().severe("Ranking Error (" + promoterName + " > " + e.getTarget().getIdentifier() + "): " + e.getMessage());
+			plugin.getLogger().severe("Ranking Error (" + promoterName + " > " + e.getTarget().getName() + "): " + e.getMessage());
 		}
 	}
 	
@@ -144,13 +144,13 @@ public class PromotionCommands extends PermissionsCommand {
 		try {
 			PermissionGroup targetGroup = user.demote(demoter, args.get("ladder"));
 			
-			this.informPlayer(plugin, user, "You have been demoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getIdentifier() + " group");
-			sender.sendMessage("User " + describeUser(user) + " demoted to " + targetGroup.getIdentifier() + " group");
-			plugin.getLogger().info("User " + describeUser(user) + " has been demoted to " + targetGroup.getIdentifier() + " group on " + targetGroup.getRankLadder() + " ladder by " + demoterName);
+			this.informPlayer(plugin, user, "You have been demoted on " + targetGroup.getRankLadder() + " ladder to " + targetGroup.getName() + " group");
+			sender.sendMessage("User " + user.getName() + " demoted to " + targetGroup.getName() + " group");
+			plugin.getLogger().info("User " + user.getName() + " has been demoted to " + targetGroup.getName() + " group on " + targetGroup.getRankLadder() + " ladder by " + demoterName);
 		}
 		catch (RankingException e) {
 			sender.sendMessage(ChatColor.RED + "Demotion error: " + e.getMessage());
-			plugin.getLogger().severe("Ranking Error (" + demoterName + " demotes " + e.getTarget().getIdentifier() + "): " + e.getMessage());
+			plugin.getLogger().severe("Ranking Error (" + demoterName + " demotes " + e.getTarget().getName() + "): " + e.getMessage());
 		}
 	}
 	

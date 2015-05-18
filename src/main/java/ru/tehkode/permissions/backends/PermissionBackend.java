@@ -23,11 +23,9 @@ import ru.tehkode.permissions.exceptions.PermissionBackendException;
  * 
  * Default group: Groups have a default flag. All users are in groups with default marked true. No
  * default group is required to exist. */
-@SuppressWarnings({ "unused", "javadoc" })
 public abstract class PermissionBackend {
 	private final PermissionManager manager;
 	private final ConfigurationSection backendConfig;
-	
 	private boolean persistent;
 	
 	protected PermissionBackend(PermissionManager manager, ConfigurationSection backendConfig) throws PermissionBackendException {
@@ -52,11 +50,6 @@ public abstract class PermissionBackend {
 	public abstract boolean hasUser(String userName);
 	
 	public abstract boolean hasGroup(String group);
-	
-	/** Return list of identifiers associated with users. These may not be user-readable
-	 * 
-	 * @return Identifiers associated with users */
-	public abstract Collection<String> getUserIdentifiers();
 	
 	/** Return friendly names of known users. These cannot be passed to {@link #getUserData(String)} to
 	 * return a valid user object
@@ -110,7 +103,7 @@ public abstract class PermissionBackend {
 				BackendDataTransfer.transferGroup(backend.getGroupData(group), getGroupData(group));
 			}
 			
-			for (String user : backend.getUserIdentifiers()) {
+			for (String user : backend.getUserNames()) {
 				BackendDataTransfer.transferUser(backend.getUserData(user), getUserData(user));
 			}
 			

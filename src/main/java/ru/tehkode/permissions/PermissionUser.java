@@ -12,11 +12,11 @@
 package ru.tehkode.permissions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.entity.Player;
@@ -53,11 +53,11 @@ public class PermissionUser extends PermissionEntity {
 		super.initialize();
 		
 		if (this.manager.shouldCreateUserRecords() && this.isVirtual()) {
-			this.getData().setParents(this.getOwnParentIdentifiers(null), null);
+			this.getData().setParents(this.getOwnParentNames(null), null);
 		}
 		
 		if (this.isDebug()) {
-			manager.getLogger().info("User " + this.getIdentifier() + " initialized");
+			manager.getLogger().info("User " + this.getName() + " initialized");
 		}
 	}
 	
@@ -107,7 +107,7 @@ public class PermissionUser extends PermissionEntity {
 	public void addGroup(String groupName, String worldName) {
 		if (groupName == null || groupName.isEmpty()) return;
 		
-		List<String> groups = new ArrayList<>(getOwnParentIdentifiers(worldName));
+		List<String> groups = new ArrayList<>(getOwnParentNames(worldName));
 		
 		if (groups.contains(groupName)) return;
 		
@@ -118,7 +118,7 @@ public class PermissionUser extends PermissionEntity {
 			groups.add(0, groupName); // add group to start of list
 		}
 		
-		this.setParentsIdentifier(groups, worldName);
+		this.setParentsName(groups, worldName);
 	}
 	
 	public void addGroup(String groupName) {
@@ -131,7 +131,7 @@ public class PermissionUser extends PermissionEntity {
 	public void addGroup(PermissionGroup group, String worldName) {
 		if (group == null) return;
 		
-		this.addGroup(group.getIdentifier(), worldName);
+		this.addGroup(group.getName(), worldName);
 	}
 	
 	public void addGroup(PermissionGroup group) {
@@ -152,11 +152,11 @@ public class PermissionUser extends PermissionEntity {
 	public void removeGroup(String groupName, String worldName) {
 		if (groupName == null || groupName.isEmpty()) return;
 		
-		List<String> groups = new ArrayList<>(getOwnParentIdentifiers(worldName));
+		List<String> groups = new ArrayList<>(getOwnParentNames(worldName));
 		if (!groups.contains(groupName)) return;
 		
 		groups.remove(groupName);
-		this.setParentsIdentifier(groups, worldName);
+		this.setParentsName(groups, worldName);
 	}
 	
 	public void removeGroup(String groupName) {
@@ -169,7 +169,7 @@ public class PermissionUser extends PermissionEntity {
 	public void removeGroup(PermissionGroup group, String worldName) {
 		if (group == null) return;
 		
-		this.removeGroup(group.getIdentifier(), worldName);
+		this.removeGroup(group.getName(), worldName);
 	}
 	
 	public void removeGroup(PermissionGroup group) {
@@ -402,7 +402,7 @@ public class PermissionUser extends PermissionEntity {
 		if (promoter != null && promoter.isRanked(ladderName)) {
 			promoterRank = promoter.getRank(ladderName);
 			
-			if (promoterRank >= rank) throw new RankingException("Promoter don't have high enough rank to change " + this.getIdentifier() + "'s rank", this, promoter);
+			if (promoterRank >= rank) throw new RankingException("Promoter don't have high enough rank to change " + this.getName() + "'s rank", this, promoter);
 		}
 		
 		return promoterRank;
@@ -436,10 +436,10 @@ public class PermissionUser extends PermissionEntity {
 	
 	public Player getPlayer() {
 		try {
-			return manager.getPlugin().getServer().getPlayer(UUID.fromString(getIdentifier()));
+			return manager.getPlugin().getServer().getPlayer(this.getName());
 		}
 		catch (Throwable ex) { // Not a UUID or method not implemented in server build
-			return manager.getPlugin().getServer().getPlayerExact(getIdentifier());
+			return manager.getPlugin().getServer().getPlayerExact(this.getName());
 		}
 	}
 	
@@ -496,11 +496,11 @@ public class PermissionUser extends PermissionEntity {
 	}
 	
 	protected boolean checkMembership(PermissionGroup group, String worldName) {
-		int groupLifetime = this.getOwnOptionInteger("group-" + group.getIdentifier() + "-until", worldName, 0);
+		int groupLifetime = this.getOwnOptionInteger("group-" + group.getName() + "-until", worldName, 0);
 		
 		if (groupLifetime > 0 && groupLifetime < System.currentTimeMillis() / 1000) { // check for
 																																									// expiration
-			this.setOption("group-" + group.getIdentifier() + "-until", null, worldName); // remove option
+			this.setOption("group-" + group.getName() + "-until", null, worldName); // remove option
 			this.removeGroup(group, worldName); // remove membership
 			// @TODO Make notification of player about expired memebership
 			return false;
@@ -517,15 +517,15 @@ public class PermissionUser extends PermissionEntity {
 	
 	@Deprecated
 	public String[] getGroupsNames(String world) {
-		return getParentIdentifiers(world).toArray(new String[0]);
+		return getParentNames(world).toArray(new String[0]);
 	}
 	
 	/** Get group for this user, global inheritance only
 	 * 
 	 * @return */
 	@Deprecated
-	public List<PermissionGroup> getGroups() {
-		return getParents();
+	public PermissionGroup[] getGroups() {
+		return getParents().toArray(new PermissionGroup[0]);
 	}
 	
 	/** Get groups for this user for specified world
@@ -533,49 +533,49 @@ public class PermissionUser extends PermissionEntity {
 	 * @param worldName Name of world
 	 * @return PermissionGroup groups */
 	@Deprecated
-	public List<PermissionGroup> getGroups(String worldName) {
-		return getParents(worldName);
+	public PermissionGroup[] getGroups(String worldName) {
+		return getParents(worldName).toArray(new PermissionGroup[0]);
 	}
 	
 	/** Get group names, common space only
 	 * 
 	 * @return */
 	@Deprecated
-	public List<String> getGroupNames() {
-		return getParentIdentifiers();
+	public String[] getGroupNames() {
+		return getParentNames().toArray(new String[0]);
 	}
 	
 	/** Get group names in specified world
 	 * 
 	 * @return String array of user's group names */
 	@Deprecated
-	public List<String> getGroupNames(String worldName) {
-		return getParentIdentifiers(worldName);
+	public String[] getGroupNames(String worldName) {
+		return getParentNames(worldName).toArray(new String[0]);
 	}
 	
 	/** Set parent groups for user
 	 * 
 	 * @param groups array of parent group names */
 	@Deprecated
-	public void setGroups(List<String> groups, String worldName) {
-		setParentsIdentifier(groups, worldName);
+	public void setGroups(String[] groups, String worldName) {
+		setParentsName(Arrays.asList(groups), worldName);
 	}
 	
 	@Deprecated
-	public void setGroups(List<String> groups) {
-		setParentsIdentifier(groups);
+	public void setGroups(String[] groups) {
+		setParentsName(Arrays.asList(groups));
 	}
 	
 	/** Set parent groups for user
 	 * 
 	 * @param parentGroups array of parent group objects */
 	@Deprecated
-	public void setGroupObjects(List<PermissionGroup> parentGroups, String worldName) {
-		setParents(parentGroups, worldName);
+	public void setGroups(PermissionGroup[] parentGroups, String worldName) {
+		setParents(Arrays.asList(parentGroups), worldName);
 	}
 	
 	@Deprecated
-	public void setGroupObjects(List<PermissionGroup> parentGroups) {
-		setParents(parentGroups);
+	public void setGroups(PermissionGroup[] parentGroups) {
+		setParents(Arrays.asList(parentGroups));
 	}
 }

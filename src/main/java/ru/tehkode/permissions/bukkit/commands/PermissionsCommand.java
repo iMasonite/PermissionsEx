@@ -32,7 +32,6 @@ import ru.tehkode.permissions.commands.CommandsManager;
 import ru.tehkode.permissions.commands.exceptions.AutoCompleteChoicesException;
 import ru.tehkode.utils.StringUtils;
 
-@SuppressWarnings({ "unused" })
 public abstract class PermissionsCommand implements CommandListener {
 	protected CommandsManager manager;
 	
@@ -48,10 +47,7 @@ public abstract class PermissionsCommand implements CommandListener {
 	}
 	
 	protected void informPlayer(PermissionsEx plugin, PermissionUser user, String message) {
-		if (!plugin.getConfig().getBoolean("permissions.informplayers.changes", false)) return; // User
-																																														// informing
-																																														// is
-																																														// disabled
+		if (!plugin.getConfig().getBoolean("permissions.informplayers.changes", false)) return;
 		
 		Player player = user.getPlayer();
 		if (player == null) return;
@@ -70,7 +66,7 @@ public abstract class PermissionsCommand implements CommandListener {
 				rank = "rank " + group.getRank() + " @ " + group.getRankLadder();
 			}
 			
-			sender.sendMessage("   " + group.getIdentifier() + " (" + rank + ")");
+			sender.sendMessage("   " + group.getName() + " (" + rank + ")");
 		}
 	}
 	
@@ -79,14 +75,14 @@ public abstract class PermissionsCommand implements CommandListener {
 		
 		if (playerName.startsWith("#")) return playerName.substring(1);
 		
-		List<String> players = new LinkedList<>();
+		List<String> players = new LinkedList<String>();
 		
 		// Collect online Player names
 		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			if (player.getName().equalsIgnoreCase(playerName)) return player.getUniqueId().toString();
+			if (player.getName().equalsIgnoreCase(playerName)) return player.getName();
 			
-			if (player.getName().toLowerCase().startsWith(playerName.toLowerCase()) && !players.contains(player.getUniqueId().toString())) {
-				players.add(player.getUniqueId().toString());
+			if (player.getName().toLowerCase().startsWith(playerName.toLowerCase()) && !players.contains(player.getName())) {
+				players.add(player.getName());
 			}
 		}
 		
@@ -105,11 +101,7 @@ public abstract class PermissionsCommand implements CommandListener {
 		// Nothing found
 		return playerName;
 	}
-	
-	protected String describeUser(PermissionUser user) {
-		return user.getIdentifier() + "/" + user.getName();
-	}
-	
+		
 	protected String autoCompleteGroupName(String groupName) {
 		return this.autoCompleteGroupName(groupName, "group");
 	}
@@ -235,13 +227,13 @@ public abstract class PermissionsCommand implements CommandListener {
 				continue;
 			}
 			
-			buffer.append(StringUtils.repeat("  ", level)).append(" - ").append(group.getIdentifier()).append("\n");
+			buffer.append(StringUtils.repeat("  ", level)).append(" - ").append(group.getName()).append("\n");
 			
 			// Groups
 			buffer.append(printHierarchy(group, worldName, level + 1));
 			
 			for (PermissionUser user : group.getUsers(worldName)) {
-				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(user.getIdentifier()).append("\n");
+				buffer.append(StringUtils.repeat("  ", level + 1)).append(" + ").append(user.getName()).append("\n");
 			}
 		}
 		
@@ -262,7 +254,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			
 			builder.append(permission);
 			if (level > 0) {
-				builder.append(" (from ").append(entity.getIdentifier()).append(")");
+				builder.append(" (from ").append(entity.getName()).append(")");
 			}
 			else {
 				builder.append(" (own)");
@@ -270,7 +262,7 @@ public abstract class PermissionsCommand implements CommandListener {
 			builder.append("\n");
 		}
 		
-		List<PermissionGroup> parents = entity.getParents(worldName);
+		// List<PermissionGroup> parents = entity.getParents(worldName);
 		level++; // Just increment level once
 		return builder.toString();
 	}

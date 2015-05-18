@@ -79,8 +79,8 @@ public abstract class CachingData implements PermissionsData {
 	}
 	
 	@Override
-	public String getIdentifier() {
-		return getBackingData().getIdentifier();
+	public String getName() {
+		return getBackingData().getName();
 	}
 	
 	@Override

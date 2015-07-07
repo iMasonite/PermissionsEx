@@ -121,13 +121,6 @@ public class PermissionsEx extends JavaPlugin {
 			this.config = new PermissionsExConfig(this.getConfig());
 			this.commandsManager = new CommandsManager(this);
 			
-			if (!getServer().getOnlineMode()) {
-				getLogger().log(Level.WARNING, "This server is in offline mode. Unless this server is configured to integrate with a supported proxy (see http://dft.ba/-8ous), UUIDs *may not be stable*!");
-			}
-			// this.permissionsManager = new PermissionManager(this.config);
-			/*
-			 * } catch (PermissionBackendException e) { logBackendExc(e); errored = true;
-			 */
 		}
 		catch (Throwable t) {
 			ErrorReport.handleError("In onLoad", t);
